@@ -1,9 +1,16 @@
 variable "aws_region" {
-  default = "us-east-1"
+  type        = string
+  description = "AWS region to deploy resources into"
+  default     = "us-east-1"
 }
 
-variable "env" {
+variable "environment" {
   default = "dev"
+}
+
+variable "name_prefix" {
+  type        = string
+  default     = "banking"
 }
 
 variable "vpc_cidr" {
@@ -22,7 +29,8 @@ variable "availability_zones" {
   default = ["us-east-1a", "us-east-1b"]
 }
 
-variable "name_prefix" {
+variable "cluster_name" {
+  description = "EKS cluster name"
   type        = string
-  default     = "banking"
+  default     = "banking-app-cluster"
 }
