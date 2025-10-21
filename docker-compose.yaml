@@ -28,7 +28,7 @@ services:
       configserver:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8080:8080"
@@ -49,7 +49,7 @@ services:
       configserver:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "9000:9000"
@@ -70,7 +70,7 @@ services:
       configserver:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8090:8090"
@@ -97,7 +97,7 @@ services:
       loans:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8072:8072"

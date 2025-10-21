@@ -1,16 +1,16 @@
 resource "aws_db_subnet_group" "this" {
-  name       = "${var.env}-db-subnet-group"
+  name       = "${var.environment}-db-subnet-group"
   subnet_ids = var.subnet_ids
 
   tags = {
-    Name = "${var.env}-db-subnet-group"
+    Name = "${var.environment}-db-subnet-group"
   }
 }
 
 resource "aws_db_instance" "this" {
-  identifier              = "${var.env}-db"
+  identifier              = "${var.environment}-db"
   engine                  = "postgres"         # or "mysql"
-  instance_class          = "db.t3.micro"
+  instance_class          = var.db_instance_class
   allocated_storage       = 20
   username                = var.db_username
   password                = var.db_password
@@ -21,7 +21,7 @@ resource "aws_db_instance" "this" {
   deletion_protection     = false
 
   tags = {
-    Name = "${var.env}-rds"
+    Name = "${var.environment}-rds"
   }
 }
 

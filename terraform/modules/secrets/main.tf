@@ -1,6 +1,6 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name        = "${var.env}-db-credentials"
-  description = "Database credentials for ${var.env} environment"
+  name        = "${var.environment}-db-credentials"
+  description = "Database credentials for ${var.environment} environment"
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {

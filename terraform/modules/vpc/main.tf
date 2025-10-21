@@ -4,7 +4,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "${var.env}-vpc"
+    Name = "${var.environment}-vpc"
   }
 }
 
@@ -12,7 +12,7 @@ resource "aws_vpc" "main" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "${var.env}-igw"
+    Name = "${var.environment}-igw"
   }
 }
 
@@ -24,7 +24,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   availability_zone       = element(var.availability_zones, count.index)
   tags = {
-    Name = "${var.env}-public-${count.index + 1}"
+    Name = "${var.environment}-public-${count.index + 1}"
   }
 }
 
@@ -35,7 +35,7 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = element(var.availability_zones, count.index)
   tags = {
-    Name = "${var.env}-private-${count.index + 1}"
+    Name = "${var.environment}-private-${count.index + 1}"
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.igw.id
   }
   tags = {
-    Name = "${var.env}-public-rt"
+    Name = "${var.environment}-public-rt"
   }
 }
 
@@ -63,7 +63,7 @@ resource "aws_route_table_association" "public_assoc" {
 resource "aws_eip" "nat_eip" {
   domain = "vpc"
   tags = {
-    Name = "${var.env}-nat-eip"
+    Name = "${var.environment}-nat-eip"
   }
 }
 
@@ -74,7 +74,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[0].id
   depends_on    = [aws_internet_gateway.igw]
   tags = {
-    Name = "${var.env}-nat-gateway"
+    Name = "${var.environment}-nat-gateway"
   }
 }
 
@@ -83,7 +83,7 @@ resource "aws_nat_gateway" "main" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "${var.env}-private-rt"
+    Name = "${var.environment}-private-rt"
   }
 }
 
@@ -103,7 +103,7 @@ resource "aws_route_table_association" "private_subnets_assoc" {
 }
 
 resource "aws_security_group" "rds_sg" {
-  name        = "${var.env}-rds-sg"
+  name        = "${var.environment}-rds-sg"
   description = "Allow DB access from EKS nodes"
   vpc_id      = aws_vpc.main.id
 
@@ -123,6 +123,6 @@ resource "aws_security_group" "rds_sg" {
   }
 
   tags = {
-    Name = "${var.env}-rds-sg"
+    Name = "${var.environment}-rds-sg"
   }
 }

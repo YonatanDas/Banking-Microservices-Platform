@@ -12,7 +12,7 @@ variable "cluster_version" {
 
 variable "environment" {
   type        = string
-  default     = "prod"
+  default     = "dev"
 }
 
 ##########################################
