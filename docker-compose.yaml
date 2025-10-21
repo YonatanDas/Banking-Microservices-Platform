@@ -5,31 +5,14 @@ networks:
     driver: bridge
 
 services:
-  # 🏗️ 1. Config Server (must start first)
-  configserver:
-    image: yonatandas/configserver:v1
-    container_name: configserver
-    ports:
-      - "8071:8071"
-    networks:
-      - banking-app-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8071/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: always
-
-  # 🏦 2. Accounts Service
   accounts:
+    build:
+      context: ./accounts
+      dockerfile: Dockerfile
     image: yonatandas/accounts:v1
     container_name: accounts
-    depends_on:
-      configserver:
-        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8080:8080"
     networks:
@@ -41,16 +24,14 @@ services:
       retries: 5
     restart: always
 
-  # 💳 3. Cards Service
   cards:
+    build:
+      context: ./cards
+      dockerfile: Dockerfile
     image: yonatandas/cards:v1
     container_name: cards
-    depends_on:
-      configserver:
-        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "9000:9000"
     networks:
@@ -62,16 +43,14 @@ services:
       retries: 5
     restart: always
 
-  # 💰 4. Loans Service
   loans:
+    build:
+      context: ./loans
+      dockerfile: Dockerfile
     image: yonatandas/loans:v1
     container_name: loans
-    depends_on:
-      configserver:
-        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8090:8090"
     networks:
@@ -83,13 +62,13 @@ services:
       retries: 5
     restart: always
 
-  # 🌐 5. Gateway Server (depends on all)
   gateway:
+    build:
+      context: ./gatewayserver
+      dockerfile: Dockerfile
     image: yonatandas/gateway:v1
     container_name: gateway
     depends_on:
-      configserver:
-        condition: service_healthy
       accounts:
         condition: service_healthy
       cards:
@@ -98,7 +77,6 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8071/
     ports:
       - "8072:8072"
     networks:
