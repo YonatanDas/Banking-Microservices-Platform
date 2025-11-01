@@ -1,36 +1,61 @@
 global:
-  environment: Staging
-  aws: 
-    region: us-east-1 #can be changed based on requirement
-  dbSecretName: stag-db-credentials 
-  imagetag: stag
-  db:
-    host: stag-db.cluster-xxxx.us-east-1.rds.amazonaws.com #Stag
-    user: admin
-    password: #stagpassword
-    name: bankingapp-stag
+  environment: stag
+  aws:
+    region: us-east-1
+  springProfile: stag
+  javaToolOptions: ""
+  otelExporterEndpoint: ""
+  otelMetricsExporter: none
+  otelLogsExporter: none
+  
+  
+  eso:
+    enabled: true
+    namespace: default
+    secretStoreName: aws-secret-store
+    service: SecretsManager
+    installCRDs: true
+  
+configMapName: bankingapp-config
 
+# Per-service overrides
 accounts:
+  serviceAccount:
+    name: accounts-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/stag-accounts-rds-access-role
   image:
-    tag: v1.0.0-Staging
+    tag: v1.0.0
   replicaCount: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
+  secretName: stag-db-credentials
 
 cards:
+  serviceAccount:
+    name: cards-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/stag-cards-rds-access-role
   image:
-    tag: v1.0.0-Staging
-  replicaCount: 1 
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
 
 loans:
+  serviceAccount:
+    name: loans-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/stag-loans-rds-access-role
   image:
-    tag: v1.0.0-Staging
+    tag: v1.0.0
   replicaCount: 1
+  secretName: stag-db-credentials
 
-gatewayserver:
+gateway:
+  serviceAccount:
+    create: true
+    name: gateway-sa
   image:
-    tag: v1.0.0-Staging
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
   service:
     type: LoadBalancer

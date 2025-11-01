@@ -1,36 +1,61 @@
 global:
-  environment: Production
-  aws: 
-    region: us-east-1 #can be changed based on requirement
-  dbSecretName: prod-db-credentials
-  imagetag: prod
-  db:
-    host: prod-db.cluster-xxxx.us-east-1.rds.amazonaws.com #Prod
-    user: admin
-    password: prodpassword 
-    name: bankingapp-Production
+  environment: prod
+  aws:
+    region: us-east-1
+  springProfile: prod
+  javaToolOptions: ""
+  otelExporterEndpoint: ""
+  otelMetricsExporter: none
+  otelLogsExporter: none
+  
+  
+  eso:
+    enabled: true
+    namespace: default
+    secretStoreName: aws-secret-store
+    service: SecretsManager
+    installCRDs: true
+  
+configMapName: bankingapp-config
 
+# Per-service overrides
 accounts:
+  serviceAccount:
+    name: accounts-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-accounts-rds-access-role
   image:
-    tag: v1.0.0-Prod
+    tag: v1.0.0
   replicaCount: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
+  secretName: prod-db-credentials
 
 cards:
+  serviceAccount:
+    name: cards-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-cards-rds-access-role
   image:
-    tag: v1.0.0-Prod 
+    tag: v1.0.0
   replicaCount: 1
+  secretName: prod-db-credentials
 
 loans:
+  serviceAccount:
+    name: loans-sa
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-loans-rds-access-role
   image:
-    tag: v1.0.0-Prod
+    tag: v1.0.0
   replicaCount: 1
+  secretName: prod-db-credentials
 
-gatewayserver:
+gateway:
+  serviceAccount:
+    create: true
+    name: gateway-sa
   image:
-    tag: v1.0.0-Prod
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: prod-db-credentials
   service:
     type: LoadBalancer

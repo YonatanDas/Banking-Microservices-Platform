@@ -14,7 +14,7 @@ dependencies:
   - name: loans
     version: 0.1.0
     repository: "file://../../bankingapp-services/loans"
-  - name: gatewayserver
+  - name: gateway
     version: 0.1.0
-    repository: "file://../../bankingapp-services/gatewayserver"
+    repository: "file://../../bankingapp-services/gateway"
 

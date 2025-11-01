@@ -8,8 +8,8 @@ dependencies:
 - name: loans
   repository: file://../../bankingapp-services/loans
   version: 0.1.0
-- name: gatewayserver
-  repository: file://../../bankingapp-services/gatewayserver
+- name: gateway
+  repository: file://../../bankingapp-services/gateway
   version: 0.1.0
-digest: sha256:6dc8e4f84082046a849d57ba6a2b3faaabb70adcefe438452359cde9e6a22239
-generated: "2025-10-20T21:35:45.7597384+03:00"
+digest: sha256:569fc050197ad7a40067348624cd2e0a95cb4a3c3e6ba4e28acf431fa99d7bec
+generated: "2025-10-28T02:08:00.8330932+02:00"
