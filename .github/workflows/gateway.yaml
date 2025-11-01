@@ -121,4 +121,4 @@ jobs:
           trivy image \
             --exit-code 1 \
             --severity HIGH,CRITICAL \
-            ${{ env.REGISTRY }}/${{ env.SERVICE }}:${{ github.sha::7 }}
+            ${{ env.REGISTRY }}/${{ env.SERVICE }}:${{ github.sha }}
