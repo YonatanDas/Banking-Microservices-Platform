@@ -30,3 +30,7 @@ module "external_secrets_role" {
     "arn:aws:secretsmanager:${var.aws_region}:${var.aws_account_id}:secret:dev-db-credentials-*"
   ]
 }
+
+module "github_oidc" {
+  source = "./github_oidc"
+}
