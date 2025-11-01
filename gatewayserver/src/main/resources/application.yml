@@ -9,7 +9,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true              # enables route mapping using service names
+          enabled: false              # enables route mapping using service names
           lower-case-service-id: true
       routes:
         # ---- Accounts Service ----
@@ -59,6 +59,8 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  tracing: 
+    enabled: false   
 
 logging:
   level:

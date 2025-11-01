@@ -3,16 +3,16 @@ server:
 
 spring:
   application:
-    name: "accounts"
-
+    name: accounts
   profiles:
-    active: "dev"
+    active: dev
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${HOST}:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,24 +20,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  cloud:
-    aws:
-      region:
-        static: ${AWS_REGION:us-east-1}
-      secretsmanager:
-        enabled: true
-        default-context: /bankingapp
-        name: ${DB_SECRET_NAME:dev-db-credentials}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 management:
   endpoints:
     web:
       exposure:
-        include: "health,info,prometheus"  # expose only what’s safe
+        include: "health,info,prometheus"
   endpoint:
     shutdown:
-      enabled: false                       # disable remote shutdown
+      enabled: false
   health:
     readinessstate:
       enabled: true
@@ -49,7 +41,7 @@ management:
 
 logging:
   level:
-    com.bankingapp: INFO                   # set application log level 
+    org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator: DEBUG
 
 info:
   app:

@@ -1,25 +1,20 @@
 # -------- Stage 1: Build --------
-FROM maven:3.9.8-eclipse-temurin-17 AS builder
-
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
-# Copy only pom.xml first for dependency caching
+# Cache Maven dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B
 
-# Copy the rest of the source code
+# Copy source and build
 COPY src ./src
-
-# Package the JAR
 RUN mvn clean package -DskipTests
 
 # -------- Stage 2: Runtime --------
-FROM eclipse-temurin:17-jre
-
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy JAR from builder stage
+# Copy only the built jar
 COPY --from=builder /app/target/*.jar app.jar
-
 EXPOSE 9000
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

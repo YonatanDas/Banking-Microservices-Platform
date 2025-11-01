@@ -27,7 +27,8 @@
     <!-- Centralized dependency management -->
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Cloud dependency versions -->
+
+            <!-- Spring Cloud -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -36,7 +37,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- AWS SDK -->
+            <!-- AWS SDK BOM (v2) -->
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
@@ -44,23 +45,22 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
+    <!-- ===== DEPENDENCIES ===== -->
     <dependencies>
 
-        <!-- Spring Core -->
+        <!-- Core Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <!-- Database -->
@@ -68,37 +68,69 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- circuit breaker for resilience -->
+        <!-- Circuit breaker (resilience4j) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
         </dependency>
 
-        <!-- AWS -->
+        <!-- AWS SDK (for Secrets Manager access if needed directly) -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>secretsmanager</artifactId>
+            <version>2.25.19</version>
         </dependency>
+        <!-- AWS STS (needed for IRSA / WebIdentity credentials) -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>sts</artifactId>
+            <version>2.25.19</version>
         </dependency>
+
+        <!-- Spring Cloud AWS Secrets Manager integration -->
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-secrets-manager</artifactId>
+             <version>3.0.1</version>    
         </dependency>
 
-        <!-- Utilities -->
+        <!-- Spring Cloud Bootstrap (for externalized config) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Swagger / OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+        <!-- Feign Client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- Apache HttpComponents (optional for Feign/HTTP) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
         </dependency>
 
         <!-- Testing -->
@@ -107,11 +139,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
+    
+    <!-- ===== BUILD CONFIG ===== -->
     <build>
         <plugins>
-            <!-- Compile with Lombok -->
+            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -122,27 +157,24 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot executable jar -->
+            <!-- Spring Boot Repackage -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
-            <!-- Container image build (Jib) -->
+            <!-- Clean builds -->
             <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <to>
-                        <image>yonatandas/${project.artifactId}:v1</image>
-                    </to>
-                    <container>
-                        <ports>
-                            <port>8080</port>
-                        </ports>
-                    </container>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.1</version>
             </plugin>
         </plugins>
     </build>
