@@ -22,6 +22,6 @@ node_max_size = 3
 ############################################
 db_instance_class = "db.t3.micro"
 db_username = "bankingdb"
-backup_retention_period = 7
+backup_retention_period = 0
 deletion_protection = false
 

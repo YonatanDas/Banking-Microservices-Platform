@@ -40,7 +40,7 @@ variable "allocated_storage" {
 }
 
 variable "backup_retention_period" {
-    default = 7
+    default = 0
 }
 
 variable "multi_az" {
@@ -55,6 +55,4 @@ variable "deletion_protection" {
     default = false
 }
 
-variable "final_snapshot_identifier" {
-    default = null
-}
+
