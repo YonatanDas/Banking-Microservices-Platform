@@ -1,0 +1,42 @@
+name: CI - Accounts Service
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "./accounts/**"
+  pull_request:
+    paths:
+      - "accounts/**"
+
+env:
+  SERVICE: accounts
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.SERVICE }}
+  SERVICE_DIR: ./accounts
+
+jobs:
+
+  test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('accounts/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Run Java Lint & Tests
+        uses: ./.github/workflows/reusable/test-java.yaml
+        with:
+          service_dir: ${{ env.SERVICE_DIR }}
+
+  build:
+    needs: test-lint
+    uses: ./.github/workflows/reusable/build-image.yaml
+    with:
+      service_name: ${{ env.SERVICE }}
+      service_dir: ${{ env.SERVICE_DIR }}

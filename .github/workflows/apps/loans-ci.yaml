@@ -1,0 +1,44 @@
+name: CI - loans Service
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "services/loans/**"
+  pull_request:
+    paths:
+      - "services/loans/**"
+
+env:
+  SERVICE: loans
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  SERVICE_DIR: services/loans
+
+jobs:
+
+  test-lint:
+    uses: ./.github/workflows/reusable/test-java.yaml
+    with:
+      service_dir: "services/loans"
+
+  build:
+    needs: test-lint
+    uses: ./.github/workflows/reusable/build-image.yaml
+    with:
+      service_name: "loans"
+      service_dir: "services/loans"
+
+  trivy:
+    needs: build
+    uses: ./.github/workflows/reusable/trivy-scan.yaml
+    with:
+      image: "${{ env.ECR_REGISTRY }}/loans:${{ github.sha }}"
+
+  update-argocd:
+    needs: trivy
+    uses: ./.github/workflows/reusable/update-image-tag.yaml
+    with:
+      service_name: "loans"
+      new_tag: "${{ github.sha }}"
+    secrets: inherit

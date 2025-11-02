@@ -1,0 +1,44 @@
+name: CI - cards Service
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "services/cards/**"
+  pull_request:
+    paths:
+      - "services/cards/**"
+
+env:
+  SERVICE: cards
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  SERVICE_DIR: services/cards
+
+jobs:
+
+  test-lint:
+    uses: ./.github/workflows/reusable/test-java.yaml
+    with:
+      service_dir: "services/cards"
+
+  build:
+    needs: test-lint
+    uses: ./.github/workflows/reusable/build-image.yaml
+    with:
+      service_name: "cards"
+      service_dir: "services/cards"
+
+  trivy:
+    needs: build
+    uses: ./.github/workflows/reusable/trivy-scan.yaml
+    with:
+      image: "${{ env.ECR_REGISTRY }}/cards:${{ github.sha }}"
+
+  update-argocd:
+    needs: trivy
+    uses: ./.github/workflows/reusable/update-image-tag.yaml
+    with:
+      service_name: "cards"
+      new_tag: "${{ github.sha }}"
+    secrets: inherit
