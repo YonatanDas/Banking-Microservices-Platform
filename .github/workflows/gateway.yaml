@@ -122,6 +122,15 @@ jobs:
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
 
+
+      - name: Configure AWS OIDC Access
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::063630846340:role/oidc-github
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          
+
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
 
