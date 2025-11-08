@@ -46,6 +46,16 @@ jobs:
         working-directory: ./gatewayserver
         run: mvn -B test
 
+      - name: Generate Code Coverage Report
+        working-directory: ./gatewayserver
+        run: mvn jacoco:report
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: gatewayserver/target/site/jacoco/
+
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
 
