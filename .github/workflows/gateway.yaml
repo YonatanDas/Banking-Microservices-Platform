@@ -72,8 +72,15 @@ jobs:
       - name: Setup Buildx & Cache
         run: ./.github/workflows/reusable/setup-buildx-cache.sh
 
-      - name: AWS OIDC Login
-        run: ./.github/workflows/reusable/aws-oidc-login.sh arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/oidc-github us-east-1
+      - name: Configure AWS OIDC Access
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/oidc-github
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: AWS ECR Login
+        run: ./cicd/scripts/aws_oidc_login.sh ${{ env.AWS_REGION }} ${{ env.REGISTRY }}
 
       - name: Build & Push Docker Image
         run: ./.github/workflows/reusable/build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
