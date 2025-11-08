@@ -80,7 +80,7 @@ jobs:
           audience: sts.amazonaws.com
 
       - name: AWS ECR Login
-        run: ./cicd/scripts/aws_oidc_login.sh ${{ env.AWS_REGION }} ${{ env.REGISTRY }}
+        run: ./.github/workflows/aws_oidc_login.sh ${{ env.AWS_REGION }} ${{ env.REGISTRY }}
 
       - name: Build & Push Docker Image
         run: ./.github/workflows/reusable/build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
