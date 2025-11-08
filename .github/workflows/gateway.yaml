@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: buildx-${{ env.SERVICE }}-${{ github.sha }}
+          key: Linux-buildx-${{ github.sha }}
           restore-keys: |
             buildx-${{ env.SERVICE }}-
             buildx-
