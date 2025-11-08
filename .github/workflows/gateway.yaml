@@ -70,6 +70,15 @@ jobs:
       - name: Make scripts executable
         run: chmod +x .github/workflows/reusable/*.sh
 
+      - name: Restore Docker cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ env.SERVICE }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ env.SERVICE }}-
+            buildx-
+
       - name: Setup Buildx & Cache
         run: ./.github/workflows/reusable/setup-buildx-cache.sh
 
