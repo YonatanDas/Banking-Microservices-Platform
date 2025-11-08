@@ -73,7 +73,7 @@ jobs:
         run: ./.github/workflows/reusable/setup-buildx-cache.sh
 
       - name: AWS OIDC Login
-        run: ./.github/workflows/reusable/aws-oidc-login.sh arn:aws:iam::<AWS_ACCOUNT_ID>:role/oidc-github us-east-1
+        run: ./.github/workflows/reusable/aws-oidc-login.sh arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/oidc-github us-east-1
 
       - name: Build & Push Docker Image
         run: ./.github/workflows/reusable/build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}

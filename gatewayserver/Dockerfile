@@ -14,7 +14,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy only the built jar1234567891785384488444112421111111111
+# Copy only the built jar12345678917853844884441124211111111112
 COPY --from=builder /app/target/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
