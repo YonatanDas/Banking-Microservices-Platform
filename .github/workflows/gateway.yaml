@@ -47,7 +47,7 @@ jobs:
         run: mvn -B test
 
       - name: Install Trivy
-        uses: aquasecurity/setup-trivy@v0.20.0
+        uses: aquasecurity/setup-trivy@v0.2.0
 
       - name: Trivy FS Security Scan
         run: trivy fs --exit-code 1 --no-progress --severity HIGH,CRITICAL gatewayserver/
@@ -111,7 +111,7 @@ jobs:
 
     steps:
       - name: Install Trivy
-        uses: aquasecurity/setup-trivy@v0.20.0
+        uses: aquasecurity/setup-trivy@v0.2.0
 
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
