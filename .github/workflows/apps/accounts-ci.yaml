@@ -2,7 +2,7 @@ name: CI - Accounts Service
 
 on:
   push:
-    branches: ["main"]
+    branches: ["test-workflows"]
     paths:
       - "./accounts/**"
   pull_request:
