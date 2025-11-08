@@ -2,7 +2,7 @@ name: CI - Gateway Service
 
 on:
   push:
-    branches: ["test-cli"]
+    branches: ["test-workflows"]
     paths:
       - "gatewayserver/**"
   pull_request:
