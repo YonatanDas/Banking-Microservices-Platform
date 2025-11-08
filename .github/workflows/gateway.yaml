@@ -38,6 +38,9 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
+      - name: Make scripts executable
+        run: chmod +x .github/workflows/reusable/*.sh
+
       - name: lint + test + coverage
         run: ./.github/workflows/reusable/test-java.sh gatewayserver
 
