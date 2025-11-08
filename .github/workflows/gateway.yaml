@@ -9,6 +9,10 @@ on:
     paths:
       - "gatewayserver/**"
 
+permissions:
+  contents: read
+  id-token: write
+  
 env:
   SERVICE: gateway
   AWS_REGION: us-east-1
