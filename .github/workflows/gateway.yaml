@@ -47,15 +47,8 @@ jobs:
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
 
-      - name: Trivy FS Security Scan
-        run: trivy fs --exit-code 0 --no-progress --severity HIGH,CRITICAL gatewayserver/
-        
-      - name: Save Trivy Report
-        run: trivy fs --exit-code 0 --no-progress --severity HIGH,CRITICAL --format table -o trivy-report.txt gatewayserver/
-      - uses: actions/upload-artifact@v4
-        with:
-          name: gateway-trivy-report
-          path: trivy-report.txt
+      - name: Trivy Scan + report
+        run: ./.github/workflows/reusable/trivy-scan.sh gatewayserver
 
 
 
