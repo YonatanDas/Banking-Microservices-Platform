@@ -51,6 +51,13 @@ jobs:
 
       - name: Trivy FS Security Scan
         run: trivy fs --exit-code 0 --no-progress --severity HIGH,CRITICAL gatewayserver/
+        
+      - name: Save Trivy Report
+        run: trivy fs --exit-code 0 --no-progress --severity HIGH,CRITICAL --format json -o trivy-report.json gatewayserver/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gateway-trivy-report
+          path: trivy-report.json
 
 
 
