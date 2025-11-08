@@ -70,10 +70,10 @@ jobs:
           path: trivy-report.txt
 
       - name: testing env variable
-        run: 
-        - echo "SERVICE is ${{ env.SERVICE }}"
-        - echo "AWS_REGION is ${{ env.AWS_REGION }}"
-        - echo "REGISTRY is ${{ env.REGISTRY }}"
+        run: |
+          echo "SERVICE is ${{ env.SERVICE }}"
+          echo "AWS_REGION is ${{ env.AWS_REGION }}"
+          echo "REGISTRY is ${{ env.REGISTRY }}"
 
 
 
