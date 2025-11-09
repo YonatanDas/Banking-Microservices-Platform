@@ -106,6 +106,9 @@ jobs:
     needs: Build-And-Push
 
     steps:
+    - name: Make scripts executable
+      run: chmod +x .github/workflows/reusable/*.sh
+
     - name: Install Trivy
       uses: aquasecurity/setup-trivy@v0.2.0  
 
