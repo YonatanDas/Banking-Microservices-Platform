@@ -1,5 +1,9 @@
 name: CI - Gateway Service
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: ["test-workflows"]
@@ -146,3 +150,4 @@ jobs:
         COSIGN_EXPERIMENTAL: "true"
       run: |
         cosign sign ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
+        cosign verify ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
