@@ -11,4 +11,4 @@
         audience: sts.amazonaws.com
 
     - name: AWS ECR Login
-      run: ./.github/workflows/reusable/aws-oidc-login.sh ${{ env.AWS_REGION }} ${{ env.REGISTRY }}
+      uses: aws-actions/amazon-ecr-login@v1
