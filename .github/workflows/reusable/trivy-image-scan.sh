@@ -12,7 +12,6 @@ trivy image \
   --exit-code 0 \
   --ignore-unfixed \
   --format table \
-  --skip-java-db-update \
   --output "${SERVICE}-trivy-image-report.txt" \
   --severity HIGH,CRITICAL \
   "${REGISTRY}/${SERVICE}:latest"
