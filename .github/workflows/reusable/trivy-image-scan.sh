@@ -10,6 +10,7 @@ echo "🧪 Running Trivy image scan for ${SERVICE}..."
 
 trivy image \
   --exit-code 0 \
+  --skip-db-update \
   --ignore-unfixed \
   --format table \
   --output "${SERVICE}-trivy-image-report.txt" \
