@@ -1,5 +1,9 @@
 name: CI - Gateway Service
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: ["test-workflows"]
@@ -49,6 +53,14 @@ jobs:
       - name: lint + test + coverage
         run: ./.github/workflows/reusable/test-java.sh gatewayserver
 
+      - name: Cache Trivy DB
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ runner.os }}
+          restore-keys: |
+            trivy-db-${{ runner.os }}-
+
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
 
@@ -85,7 +97,7 @@ jobs:
       - name: Configure AWS OIDC Access
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::063630846340:role/oidc-github
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
@@ -102,28 +114,29 @@ jobs:
   # SECURE IMAGE & SIGNING
   # -------------------------------
   Scan-And-Sign:
-
     runs-on: ubuntu-latest
     needs: Build-And-Push
 
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Setup AWS + ECR
+      uses: ./.github/actions/env-setup
+      with:
+        aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
+        aws_region: ${{ env.AWS_REGION }}
+        registry: ${{ env.REGISTRY }}
 
-    - name: Make scripts executable
-      run: chmod +x .github/workflows/reusable/*.sh
+    - name: Restore Trivy DB
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/trivy
+        key: trivy-db-${{ runner.os }}
+        restore-keys: |
+          trivy-db-${{ runner.os }}-      
 
     - name: Install Trivy
       uses: aquasecurity/setup-trivy@v0.2.0  
-
-    - name: Configure AWS OIDC Access
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: arn:aws:iam::063630846340:role/oidc-github
-        aws-region: ${{ env.AWS_REGION }}
-        audience: sts.amazonaws.com
-
-    - name: AWS ECR Login
-      run: ./.github/workflows/reusable/aws-oidc-login.sh ${{ env.AWS_REGION }} ${{ env.REGISTRY }}
 
     - name: Trivy Image Scan
       run: ./.github/workflows/reusable/trivy-image-scan.sh gateway ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
