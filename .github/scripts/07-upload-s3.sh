@@ -10,5 +10,5 @@ cp -r ${SERVICE}-trivy-image-report.txt reports/ || true
 cp -r ${SERVICE}-sbom.xml reports/ || true
 cp -r ${SERVICE_DIR}/target/site/jacoco reports/coverage || true
 
-aws s3 sync reports/ "$DEST" --delete
+
 echo "✅ Reports uploaded to $DEST"

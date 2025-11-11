@@ -13,8 +13,8 @@ echo "Tag: ${IMAGE_TAG}"
 # Build and push
 docker buildx build "$SERVICE_DIR" \
   --push \
-  --cache-from type=gha,src=/tmp/.buildx-cache \
-  --cache-to type=gha,dest=/tmp/.buildx-cache-new,mode=max \
+  --cache-from type=local,src=/tmp/.buildx-cache \
+  --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
   -t "${REGISTRY}/${SERVICE}:${IMAGE_TAG}" \
   -t "${REGISTRY}/${SERVICE}:latest"
 
