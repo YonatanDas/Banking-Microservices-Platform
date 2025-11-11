@@ -85,14 +85,13 @@ jobs:
           aws_region: ${{ env.AWS_REGION }}
           registry: ${{ env.REGISTRY }}
 
-      - name: Restore Docker cache
+      - name: Cache Docker layers
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: Linux-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            buildx-${{ env.SERVICE }}-
-            buildx-
+            ${{ runner.os }}-buildx-
 
       - name: Setup Buildx & Cache
         run: ./.github/workflows/reusable/setup-buildx-cache.sh
