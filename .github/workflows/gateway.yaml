@@ -118,6 +118,14 @@ jobs:
       - name: Build & Push Docker Image
         run: ./.github/scripts/04-build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
 
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Update Docker Cache
         run: ./.github/scripts/docker-cache-cleanup.sh
 
@@ -125,51 +133,40 @@ jobs:
   # SECURE IMAGE & SIGNING
   # -------------------------------
   Scan-And-Sign:
-
     runs-on: ubuntu-latest
-    needs: Lint-And-Test
-
+    needs: [Lint-And-Test, Build-And-Push]
     steps:
     - uses: actions/checkout@v3
-
     - name: Setup AWS + ECR
       uses: ./.github/actions/env-setup
       with:
         aws_role: arn:aws:iam::063630846340:role/oidc-github
         aws_region: ${{ env.AWS_REGION }}
         registry: ${{ env.REGISTRY }}
-
     - name: Trivy Cache
       uses: actions/cache@v3
       with:
         path: ~/.cache/trivy
         key: trivy-db-${{ runner.os }}
-
-
     - name: Install Trivy
       uses: aquasecurity/setup-trivy@v0.2.0    
-
     - name: Trivy Image Scan
       run: ./.github/scripts/05-trivy-image-scan.sh ${{ env.SERVICE }} ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
-
     - name: Upload Trivy Report
       uses: actions/upload-artifact@v4
       with:
         name: gateway-trivy-report
         path: gateway-trivy-image-report.txt
-    
     - name: Generate SBOM (CycloneDX)
       run: |
         trivy image --format cyclonedx \
           --output gateway-sbom.xml \
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
-
     - name: Install Cosign
       run: |
         wget https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64
         sudo mv cosign-linux-amd64 /usr/local/bin/cosign
         sudo chmod +x /usr/local/bin/cosign
-
     - name: Sign Docker Image (keyless OIDC)
       env:
         COSIGN_EXPERIMENTAL: "true"
@@ -179,6 +176,5 @@ jobs:
           --certificate-identity "https://github.com/YonatanDas/Multi-Environment-Microservices/.github/workflows/gateway.yaml@refs/heads/test-workflows" \
           --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
-
     - name: Upload reports to S3
-      run: .github/scripts/07-uploadartifacts-s3.sh      
+      run: .github/scripts/07-upload-s3.sh      
