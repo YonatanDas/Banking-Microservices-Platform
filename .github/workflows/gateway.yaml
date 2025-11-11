@@ -56,7 +56,7 @@ jobs:
         run: mvn -B dependency:resolve dependency:resolve-plugins -f gatewayserver/pom.xml
 
       - name: lint + test + coverage
-        run: ./.github/scripts/test-java.sh gatewayserver
+        run: ./.github/scripts/01-test-java.sh gatewayserver
 
       - name: Trivy Cache
         uses: actions/cache@v3
@@ -68,7 +68,7 @@ jobs:
         uses: aquasecurity/setup-trivy@v0.2.0
 
       - name: Trivy Scan + report
-        run: ./.github/scripts/trivy-fs-scan.sh gatewayserver
+        run: ./.github/scripts/02-trivy-fs-scan.sh gatewayserver
 
 
 
@@ -97,7 +97,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Setup Buildx & Cache
-        run: ./.github/scripts/setup-buildx-cache.sh
+        run: ./.github/scripts/03-setup-buildx-cache.sh
 
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
@@ -107,7 +107,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
 
       - name: Build & Push Docker Image
-        run: ./.github/scripts/build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
+        run: ./.github/scripts/04-build-push-image.sh gateway ./gatewayserver ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
 
       - name: Update Docker Cache
         run: ./.github/scripts/docker-cache-cleanup.sh
@@ -141,7 +141,7 @@ jobs:
       uses: aquasecurity/setup-trivy@v0.2.0    
 
     - name: Trivy Image Scan
-      run: ./.github/scripts/trivy-image-scan.sh ${{ env.SERVICE }} ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
+      run: ./.github/scripts/05-trivy-image-scan.sh ${{ env.SERVICE }} ${{ env.REGISTRY }} ${{ env.AWS_REGION }}
 
     - name: Upload Trivy Report
       uses: actions/upload-artifact@v4
@@ -172,4 +172,4 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
 
     - name: Upload reports to S3
-      run: .github/scripts/07-upload-s3.sh      
+      run: .github/scripts/07-uploadartifacts-s3.sh      
