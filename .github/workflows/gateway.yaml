@@ -62,8 +62,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/.cache/trivy
-          key: trivy-db-${{ runner.os }}
-        run: trivy --download-db-only  
+          key: trivy-db-${{ runner.os }} 
 
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
