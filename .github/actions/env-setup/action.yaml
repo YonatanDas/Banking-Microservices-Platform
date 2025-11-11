@@ -21,5 +21,5 @@ runs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Make scripts executable
-      run: chmod +x .github/workflows/reusable/*.sh
+      run: chmod +x .github/scripts/*.sh
       shell: bash
