@@ -76,7 +76,7 @@ jobs:
         run: chmod +x .github/scripts/*.sh
 
       - name: lint + test + coverage
-        run: ./.github/scripts/01-test-java.sh ${{ env.SERVICE_DIR }}
+        run: ./.github/scripts/01-test-java.sh ${{ env.SERVICE }}
 
       - name: Upload Test & Coverage Reports
         uses: actions/upload-artifact@v4
