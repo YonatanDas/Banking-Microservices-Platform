@@ -96,6 +96,9 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
+    env:
+      SERVICE: ${{ matrix.SERVICE }}
+      SERVICE_DIR: ./${{ matrix.SERVICE }}
 
     steps:
       - uses: actions/checkout@v3
@@ -132,6 +135,10 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
+    env:
+      SERVICE: ${{ matrix.SERVICE }}
+      SERVICE_DIR: ./${{ matrix.SERVICE }} 
+
     steps:
       - uses: actions/checkout@v3
       - name: Setup AWS + ECR
@@ -193,6 +200,9 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
+    env:
+      SERVICE: ${{ matrix.SERVICE }}
+      SERVICE_DIR: ./${{ matrix.SERVICE }}
     steps:
     - uses: actions/checkout@v3
     - name: Setup AWS + ECR
@@ -223,6 +233,9 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
+    env:
+      SERVICE: ${{ matrix.SERVICE }}
+      SERVICE_DIR: ./${{ matrix.SERVICE }}    
     steps:
     - uses: actions/checkout@v3
     - name: Setup AWS + ECR
