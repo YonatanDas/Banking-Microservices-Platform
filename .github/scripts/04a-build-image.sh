@@ -29,6 +29,7 @@ docker buildx build \
   --cache-from "type=local,src=${CACHE_DIR}" \
   --cache-to "type=local,dest=${NEW_CACHE_DIR},mode=max" \
   --tag "${IMAGE_URI}" \
+  --load \ 
   "${SERVICE_DIR}"
 
 mv "${NEW_CACHE_DIR}" "${CACHE_DIR}" || true
