@@ -12,7 +12,7 @@ cluster_name = "bankingapp-dev-eks"
 vpc_cidr = "10.0.0.0/16"
 
 # EKS Node Group Configuration
-############################################
+#############################################
 node_instance_type = "t3.medium"
 node_desired_capacity = 2
 node_min_size = 1
