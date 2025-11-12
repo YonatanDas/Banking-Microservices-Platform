@@ -9,7 +9,7 @@ set -euo pipefail
 
 SERVICE="${1:-}"
 REGISTRY="${2:-}"
-AWS_REGION="${3:-us-east-1}"
+AWS_REGION="${3:-}"
 
 if [[ -z "$SERVICE" || -z "$REGISTRY" ]]; then
   echo "❌ Usage: $0 <SERVICE> <REGISTRY> <AWS_REGION>" >&2
