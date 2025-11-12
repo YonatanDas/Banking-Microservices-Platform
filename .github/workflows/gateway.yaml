@@ -193,8 +193,6 @@ jobs:
     - name: Upload Trivy Report
       uses: actions/upload-artifact@v4
       with:
-        name: gateway-trivy-report
-        path: ${{ env.SERVICE_DIR }}/*.txt
         name: SBOM Artifacts
         path: ${{ env.SERVICE }}-sbom.xml
 
