@@ -58,6 +58,15 @@ jobs:
       - name: lint + test + coverage
         run: ./.github/scripts/01-test-java.sh gatewayserver
 
+      - name: Upload Test & Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage
+          path: |
+            gatewayserver/target/site/jacoco
+            gatewayserver/target/surefire-reports
+
+
   # -------------------------------
   # Trivy File System Scan
   # -------------------------------
@@ -81,6 +90,12 @@ jobs:
 
       - name: Trivy Scan + report
         run: ./.github/scripts/02-trivy-fs-scan.sh gatewayserver
+
+      - name: Upload Trivy FS Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-fs-report
+          path: trivy-reports/*.txt
 
 
 
@@ -132,6 +147,15 @@ jobs:
       - name: Update Docker Cache
         run: ./.github/scripts/docker-cache-cleanup.sh
 
+      - name: Save Build Metadata
+        run: echo "Image built at $(date)" > build-info.txt
+
+      - name: Upload Build Info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: build-info.txt
+
   # -------------------------------
   # SECURE IMAGE & SIGNING
   # -------------------------------
@@ -166,6 +190,12 @@ jobs:
           --output gateway-sbom.xml \
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
 
+    - name: Upload Trivy Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: gateway-trivy-report
+        path: gateway-trivy-image-report.txt
+
   # -------------------------------
   # Cosign Signature and Verify it
   # -------------------------------
@@ -194,5 +224,29 @@ jobs:
           --certificate-identity "https://github.com/YonatanDas/Multi-Environment-Microservices/.github/workflows/gateway.yaml@refs/heads/test-workflows" \
           --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
-    - name: Upload reports to S3
-      run: .github/scripts/07-upload-s3.sh      
+
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v4
+      with:
+        name: gateway-sbom
+        path: gateway-sbom.xml
+
+    - name: Upload Cosign Logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: cosign-signature
+        path: cosign*.log
+
+
+  Collect-Artifacts:
+    runs-on: ubuntu-latest
+    needs: [Lint-And-Test, Trivy-FS-Scan, Build-And-Push, Scan-And-SBOM, Sign-And-Verify]
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: collected-artifacts/
+
+
+        
