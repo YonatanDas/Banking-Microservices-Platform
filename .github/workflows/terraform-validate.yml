@@ -163,7 +163,7 @@ jobs:
   terraform-cost-estimation:
     name: Cost Estimation (${{ matrix.env }})
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && secrets.INFRACOST_API_KEY != ''
+    if: github.event_name == 'pull_request'
     strategy:
       matrix:
         env: [dev, stag, prod]
@@ -173,18 +173,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Infracost
+        id: setup-infracost
+        continue-on-error: true
         uses: infracost/actions/setup@v2
         with:
           api-key: ${{ secrets.INFRACOST_API_KEY }}
-        continue-on-error: true
 
       - name: Setup Terraform
+        if: steps.setup-infracost.outcome == 'success'
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
       - name: Setup AWS CLI
+        if: steps.setup-infracost.outcome == 'success'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.GITHUB_ACTIONS_ROLE_ARN }}
@@ -192,28 +195,31 @@ jobs:
           audience: sts.amazonaws.com
 
       - name: Initialize Terraform
+        if: steps.setup-infracost.outcome == 'success'
         working-directory: terraform/environments/${{ matrix.env }}
         run: terraform init
 
       - name: Run Infracost breakdown
+        if: steps.setup-infracost.outcome == 'success'
         working-directory: terraform/environments/${{ matrix.env }}
         run: |
           infracost breakdown --path . --format json --out infracost-${{ matrix.env }}.json
           infracost breakdown --path . --format html --out infracost-${{ matrix.env }}.html
 
       - name: Upload cost report
+        if: steps.setup-infracost.outcome == 'success'
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: infracost-${{ matrix.env }}
           path: |
             terraform/environments/${{ matrix.env }}/infracost-${{ matrix.env }}.json
             terraform/environments/${{ matrix.env }}/infracost-${{ matrix.env }}.html
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Comment PR with cost estimate
+        if: steps.setup-infracost.outcome == 'success'
         uses: infracost/actions/comment@v2
-        if: github.event_name == 'pull_request' && secrets.INFRACOST_API_KEY != ''
         with:
           path: terraform/environments/${{ matrix.env }}/infracost-${{ matrix.env }}.json
           behavior: update
