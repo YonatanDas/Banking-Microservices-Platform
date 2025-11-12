@@ -8,10 +8,10 @@ echo "🔎 Running Trivy FS scan on $SERVICE_DIR"
 
 mkdir -p trivy-reports
 trivy fs \
-  --exit-code 0 \
+  --exit-code 0 \                               # In a real production env will be exit code 1 if severity is HIGH,CRITICAL
   --no-progress \
-  --severity HIGH,CRITICAL \
-  --format table \
+  --severity HIGH,CRITICAL \          
+  --format json \
   --output "${SERVICE}-trivy-FS-report.txt" \
   "$SERVICE_DIR"
 

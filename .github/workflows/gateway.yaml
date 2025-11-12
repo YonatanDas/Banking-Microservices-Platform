@@ -222,31 +222,21 @@ jobs:
           --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
           ${{ env.REGISTRY }}/${{ env.SERVICE }}:latest
 
-    - name: Upload SBOM
-      uses: actions/upload-artifact@v4
-      with:
-        path: gateway-sbom.xml
-
 
   Collect-Artifacts:
     runs-on: ubuntu-latest
     needs: [Lint-And-Test, Trivy-FS-Scan, Build-And-Push, Scan-And-SBOM, Sign-And-Verify]
-
     steps:
       - uses: actions/checkout@v3
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
           registry: ${{ env.REGISTRY }}
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: collected-artifacts/
-
-      - name: Upload to S3 (optional)
-        run: aws s3 sync collected-artifacts/ s3://my-ci-artifacts55/${{ github.sha }}/
-
-
-        
+      - name: Upload to S3
+            run: ./.github/scripts/artifact_collect_and_s3.sh "gateway" "my-ci-artifacts55" "builds"
