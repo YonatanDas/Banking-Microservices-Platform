@@ -15,15 +15,14 @@ docker buildx use default || docker buildx create --use --name "${SERVICE}-build
 docker buildx inspect --bootstrap
 
 docker buildx build \
-  --platform linux/amd64 \
+  --target builder \
   --load \
-  --file "${SERVICE_DIR}/Dockerfile" \
-  --cache-from "type=local,src=${CACHE_DIR}" \
-  --tag "${IMAGE_URI}" \
-  "${SERVICE_DIR}"
+  -t ${SERVICE}:builder \
+  -f ${SERVICE_DIR}/Dockerfile \
+  ${SERVICE_DIR}
 
 echo "📦 Extracting JAR file from image for scanning..."
-CID=$(docker create "${IMAGE_URI}")
+CID=$(docker create ${SERVICE}:builder)
 docker cp "${CID}:/app/target" "${REPORT_DIR}/jar-files"
 docker rm "${CID}"
 
