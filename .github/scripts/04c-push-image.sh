@@ -19,11 +19,6 @@ IMAGE_TAG="latest"
 LOCAL_IMAGE="${SERVICE}:pre-scan"
 REMOTE_IMAGE="${REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 
-echo "🔑 Logging in to AWS ECR..."
-aws ecr get-login-password --region us-east-1 | docker login \
-  --username AWS \
-  --password-stdin "${REGISTRY}"
-
 echo "🚀 Pushing verified image to ECR: ${REMOTE_IMAGE}"
 docker tag "${LOCAL_IMAGE}" "${REMOTE_IMAGE}"
 docker push "${REMOTE_IMAGE}"
