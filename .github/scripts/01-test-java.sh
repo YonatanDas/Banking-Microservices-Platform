@@ -8,7 +8,7 @@ echo "[$(date +'%H:%M:%S')] ⏳ 🔍 Running lint and unit tests in $SERVICE_DIR
 cd "$SERVICE_DIR"
 
 # Run Checkstyle
-mvn -B checkstyle:check
+mvn -B clean verify -f ${SERVICE_DIR}/pom.xml 
 
 # Run Unit Tests
 mvn -T 1C test -DskipITs
