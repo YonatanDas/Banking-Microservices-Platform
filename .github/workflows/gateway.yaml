@@ -231,12 +231,6 @@ jobs:
         name: gateway-sbom
         path: gateway-sbom.xml
 
-    - name: Upload Cosign Logs
-      uses: actions/upload-artifact@v4
-      with:
-        name: cosign-signature
-        path: cosign*.log
-
 
   Collect-Artifacts:
     runs-on: ubuntu-latest
