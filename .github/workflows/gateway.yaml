@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trivy-fs-report
-          path: trivy-reports/*.txt
+          path: ${{ env.SERVICE_DIR }}/*.txt
 
 
 
@@ -194,7 +194,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: gateway-trivy-report
-        path: gateway-trivy-image-report.txt
+        path: ${{ env.SERVICE_DIR }}/*.txt
 
   # -------------------------------
   # Cosign Signature and Verify it
