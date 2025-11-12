@@ -81,7 +81,7 @@ jobs:
       - name: Upload Test & Coverage Reports
         uses: actions/upload-artifact@v4
         with:
-          name: test-and-coverage
+          name: ${{ env.SERVICE }}-test-and-coverage
           path: |
             ${{ env.SERVICE_DIR }}/target/site/jacoco
             ${{ env.SERVICE_DIR }}/target/surefire-reports
@@ -121,7 +121,7 @@ jobs:
       - name: Upload Trivy FS Report
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-fs-report
+          name: ${{ env.SERVICE }}-trivy-fs-report
           path: ${{ env.SERVICE }}-trivy-FS-report.txt
 
 
@@ -188,7 +188,7 @@ jobs:
       - name: Upload Build Info
         uses: actions/upload-artifact@v4
         with:
-          name: build-info
+          name: ${{ env.SERVICE }}-build-info
           path: build-info.txt
 
   # -------------------------------
