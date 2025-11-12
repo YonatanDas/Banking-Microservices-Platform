@@ -149,7 +149,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
 
       - name: Restore Docker cache
-        uses: ./.github/actions/docker-cache
+        uses: ./.github/actions/caching
         with:
           cache-key: ${{ runner.os }}-buildx-${{ github.sha }}
 
