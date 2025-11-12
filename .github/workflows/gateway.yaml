@@ -172,7 +172,7 @@ jobs:
             "${{ env.AWS_REGION }}"
 
       - name: Scan JAR before Push
-        run: ./.github/scripts/04b-scan-jar-before-push.sh "${{ env.SERVICE }}"
+        run: ./.github/scripts/04b-scan-jar-pre-push.sh "${{ env.SERVICE }}"
 
       - name: Push Image to ECR
         run: ./.github/scripts/04c-push-image.sh \
