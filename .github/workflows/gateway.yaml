@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trivy-fs-report
-          path: ${{ env.SERVICE_DIR }}/*.txt
+          path: gateway-trivy-FS-report.txt
 
 
 
@@ -195,6 +195,8 @@ jobs:
       with:
         name: gateway-trivy-report
         path: ${{ env.SERVICE_DIR }}/*.txt
+        name: SBOM Artifacts
+        path: ${{ env.SERVICE }}-sbom.xml
 
   # -------------------------------
   # Cosign Signature and Verify it
