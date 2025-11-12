@@ -2,6 +2,7 @@
 set -e
 
 SERVICE_DIR=$1
+ROOT_DIR="$(git rev-parse --show-toplevel)"
 REPORT_NAME=$(basename "$SERVICE_DIR")-trivy-report.txt
 
 echo "🔎 Running Trivy FS scan on $SERVICE_DIR"
@@ -13,6 +14,6 @@ trivy fs \
   --severity HIGH,CRITICAL \          
   --format json \
   --output "${SERVICE}-trivy-FS-report.txt" \
-  "$SERVICE_DIR"
+  "$ROOT_DIR/$SERVICE_DIR"
 
 echo "✅ Scan complete: trivy-reports/$REPORT_NAME"

@@ -116,7 +116,7 @@ jobs:
         uses: aquasecurity/setup-trivy@v0.2.0
 
       - name: Trivy Scan + report
-        run: ./.github/scripts/02-trivy-fs-scan.sh ${{ env.SERVICE_DIR }}
+        run: ./.github/scripts/02-trivy-fs-scan.sh ${{ env.SERVICE }}
 
       - name: Upload Trivy FS Report
         uses: actions/upload-artifact@v4
