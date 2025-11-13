@@ -40,8 +40,8 @@ jobs:
 
       - name: Check Terraform formatting
         run: |
-          -chdir terraform init terraform/ 
-          terraform fmt -check -recursive terraform/
+          terraform -chdir=./terraform init
+          terraform -chdir=./terraform fmt -check -recursive
 
   terraform-validate:
     name: Validate (${{ matrix.env }})
@@ -60,12 +60,14 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Setting up env
+        uses: actions/checkout@v3
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/env-setup
         with:
-          role-to-assume: ${{ secrets.GITHUB_ACTIONS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-          audience: sts.amazonaws.com
+          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
 
       - name: Initialize Terraform
         working-directory: terraform/environments/${{ matrix.env }}
