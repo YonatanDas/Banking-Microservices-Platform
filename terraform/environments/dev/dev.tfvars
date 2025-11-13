@@ -8,7 +8,7 @@ aws_account_id = "063630846340"
 cluster_name = "bankingapp-dev-eks"
 
 # VPC Configuration
-#############################################
+##############################################
 vpc_cidr = "10.0.0.0/16"
 
 # EKS Node Group Configuration
