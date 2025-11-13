@@ -1,5 +1,6 @@
 resource "aws_s3_bucket_object" "manifest_file" {
   bucket = aws_s3_bucket.my_bucket.id
+  env = "production"
   key    = "manifests/my_manifest.json"
   content = jsonencode({
     entries = [
