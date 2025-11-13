@@ -263,6 +263,8 @@ jobs:
       apply-status: ${{ steps.apply.outputs.status }}
       resources-created: ${{ steps.summary.outputs.resources-created }}
       resources-updated: ${{ steps.summary.outputs.resources-updated }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -364,8 +366,6 @@ jobs:
 
       - name: Create deployment tag
         if: steps.apply.outputs.status == 'success'
-        permissions:
-          contents: write
         run: |
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           git config user.name "github-actions[bot]"
