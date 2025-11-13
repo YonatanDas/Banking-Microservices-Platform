@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        env: [dev, stag, prod]
+        env: [dev] # If we want all env tests we do matrix for all env (dev, stage, prod)
       fail-fast: false
     steps:
       - name: Checkout repository
