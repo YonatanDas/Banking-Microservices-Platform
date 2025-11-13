@@ -19,7 +19,7 @@ node_min_size = 1
 node_max_size = 3
 
 # RDS Database Configuration
-#############################################
+##############################################
 db_instance_class = "db.t3.micro"
 db_username = "bankingdb"
 backup_retention_period = 0
