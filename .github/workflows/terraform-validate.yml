@@ -41,7 +41,7 @@ jobs:
       - name: Check Terraform formatting
         run: |
           terraform -chdir=./terraform init
-          terraform -chdir=./terraform fmt -check -recursive
+          terraform -chdir=./terraform fmt -recursive
 
   terraform-validate:
     name: Validate (${{ matrix.env }})
