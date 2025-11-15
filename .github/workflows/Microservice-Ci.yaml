@@ -179,7 +179,7 @@ jobs:
             "${{ env.SERVICE }}" 
 
       - name: Push Image to ECR
-        run: ./.github/scripts/04c-push-image.sh \
+        run: ./.github/scripts/04b-push-image.sh \
             "${{ env.SERVICE }}" \
             "${{ env.REGISTRY }}" \
             "${{ env.AWS_REGION }}"
@@ -258,7 +258,7 @@ jobs:
       uses: sigstore/cosign-installer@v4.0.0
 
     - name: Cosign Sign and Verify
-      run: ./.github/scripts/08-cosign-sign-verify.sh \
+      run: ./.github/scripts/06-cosign-sign-verify.sh \
             "${{ env.REGISTRY }}" \
             "${{ env.SERVICE }}" 
 
@@ -281,4 +281,4 @@ jobs:
         with:
           path: collected-artifacts/
       - name: Upload to S3
-        run: ./.github/scripts/09-artifact_collect_and_s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}}
+        run: ./.github/scripts/08-artifact_collect_and_s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}}
