@@ -4,7 +4,7 @@ environment = "dev"
 aws_account_id = "063630846340"
 
 # EKS Cluster Name
-############################################
+#############################################
 cluster_name = "bankingapp-dev-eks"
 
 # VPC Configuration
