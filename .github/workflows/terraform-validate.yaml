@@ -5,7 +5,7 @@ on:
     paths:
       - 'terraform/**'
   push:
-    branches: [main, test-workflows]
+    branches: [main]
     paths:
       - 'terraform/**'
   workflow_dispatch:
@@ -86,7 +86,7 @@ jobs:
         shell: bash
 
       - name: Run Checkov Scan
-        run: ./.github/scripts/11-checkov-security-scan.sh ${{ matrix.env }}
+        run: ./.github/scripts/09-checkov-security-scan.sh ${{ matrix.env }}
 
       - name: Upload Checkov reports
         uses: actions/upload-artifact@v4
@@ -138,7 +138,7 @@ jobs:
         with:
           path: collected-artifacts/
       - name: Upload to S3
-        run: ./.github/scripts/09-artifact_collect_and_s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}} 
+        run: ./.github/scripts/08-artifact_collect_and_s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}} 
 
       - name: Workflow Complete 
         id: complete
