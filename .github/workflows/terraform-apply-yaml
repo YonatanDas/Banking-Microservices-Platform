@@ -65,7 +65,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
           registry: ${{ env.REGISTRY }}
 
@@ -172,7 +172,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
           registry: ${{ env.REGISTRY }}
 

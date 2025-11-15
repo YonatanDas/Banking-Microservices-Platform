@@ -78,7 +78,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
           
       - name: Setup Terraform
@@ -120,7 +120,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -162,7 +162,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::063630846340:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
           aws_region: ${{ env.AWS_REGION }}
           
       - name: Setup Terraform
