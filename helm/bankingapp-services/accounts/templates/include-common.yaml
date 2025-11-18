@@ -10,3 +10,8 @@
 
 ---
 
+{{ include "common.networkpolicy" . }}
+
+---
+
+{{ include "common.hpa" . }}

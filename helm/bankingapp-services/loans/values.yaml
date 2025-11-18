@@ -16,6 +16,28 @@ image:
 servicePort: 8090
 containerPort: 8090
 
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - accounts
+  allowToServices:
+    - cards
+    - accounts
+  targetPorts:
+    accounts: 8080
+    cards: 9000
+
+ingress:
+  fromPort: 8072
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
 service:
   type: ClusterIP
   port: 8090

@@ -16,6 +16,30 @@ image:
 servicePort: 9000
 containerPort: 9000
 
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - accounts
+    - loans
+  allowToServices:
+    - accounts
+    - loans
+  targetPorts:
+    accounts: 8080
+    loans: 8090
+
+      
+
+ingress:
+  fromPort: 8072
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
 service:
   type: ClusterIP
   port: 9000

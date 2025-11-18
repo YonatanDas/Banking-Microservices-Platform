@@ -1,0 +1,3 @@
+{{- define "common.hpa" -}}
+{{/* Neutralized hpa template, moved to _hpa.tpl */}}
+{{- end -}}

@@ -7,3 +7,11 @@
 ---
 
 {{ include "common.serviceaccount" . }}
+
+---
+
+{{ include "common.networkpolicy" . }}
+
+---
+
+{{ include "common.hpa" . }}

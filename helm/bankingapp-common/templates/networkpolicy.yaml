@@ -1,0 +1,3 @@
+{{- define "common.networkpolicy" -}}
+{{/* Neutralized network policy template, moved to _networkpolicy.tpl */}}
+{{- end -}}
