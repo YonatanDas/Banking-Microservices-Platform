@@ -72,3 +72,5 @@ variable "node_max_size" {
   type        = number
   default     = 3
 }
+
+variable "region" {}

@@ -43,6 +43,7 @@ module "eks" {
   # identifiers
   cluster_name = var.cluster_name
   environment  = var.environment
+  region = var.aws_region
 
   # networking
   vpc_id          = module.vpc.vpc_id
@@ -56,6 +57,7 @@ module "eks" {
   # node group settings
   node_instance_type    = var.node_instance_type
   node_desired_capacity = var.node_desired_capacity
+
 }
 
 ############################################

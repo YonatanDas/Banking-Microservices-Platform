@@ -82,8 +82,66 @@ resource "helm_release" "external_secrets" {
     aws_iam_openid_connect_provider.eks,
   ]
 
-  set {
+  set = [
+  {  
     name  = "installCRDs"
     value = "true"
   }
+  ]
 }
+
+##########################################
+# Helm Release: AWS ALB Controller
+##########################################
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  chart      = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  version    = "1.7.2"
+
+  set = [
+  {
+    name  = "clusterName"
+    value = aws_eks_cluster.this.name
+  },
+  {
+    name  = "serviceAccount.create"
+    value = "false"
+  },
+  {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  },
+  {
+    name  = "region"
+    value = var.region
+  },
+  {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
+]
+}
+
+##########################################
+# Helm Release: Argo CD
+##########################################
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = "argocd"
+  }
+}
+
+resource "helm_release" "argocd" {
+  name       = "argocd"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  version    = "5.51.0"
+
+ # values = [
+  #  file("${path.module}/values/argocd-values.yaml")
+  #]
+}
+
