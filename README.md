@@ -1,10 +1,12 @@
 # Multi-Environment Banking Platform
 
-[![Microservices CI](https://github.com/OWNER/Multi-Environment-Microservices/actions/workflows/Microservice-Ci.yaml/badge.svg?branch=main)](https://github.com/OWNER/Multi-Environment-Microservices/actions/workflows/Microservice-Ci.yaml)
-[![Terraform Validate](https://github.com/OWNER/Multi-Environment-Microservices/actions/workflows/terraform-validate.yaml/badge.svg?branch=main)](https://github.com/OWNER/Multi-Environment-Microservices/actions/workflows/terraform-validate.yaml)
-![IaC Security](https://img.shields.io/badge/IaC%20Security-Checkov%20%2B%20tfsec-success)
-![Container Security](https://img.shields.io/badge/Containers-Trivy%20%2B%20Cosign-blue)
-![Images](https://img.shields.io/badge/Images-AWS%20ECR%20(versioned)-informational)
+[![Services CI/CD](https://github.com/<ORG>/<REPO>/actions/workflows/services-ci-cd.yaml/badge.svg)](https://github.com/<ORG>/<REPO>/actions/workflows/services-ci-cd.yaml)
+[![Terraform CI/CD](https://github.com/<ORG>/<REPO>/actions/workflows/terraform-ci-cd.yaml/badge.svg)](https://github.com/<ORG>/<REPO>/actions/workflows/terraform-ci-cd.yaml)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-844FBA?logo=terraform)
+![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5?logo=kubernetes)
+![AWS](https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazonaws)
+![Helm](https://img.shields.io/badge/Package_Manager-Helm-0F1689?logo=helm)
+![GitOps](https://img.shields.io/badge/GitOps-ArgoCD-FF4F8B?logo=argo)
 
 ## Executive Summary
 
