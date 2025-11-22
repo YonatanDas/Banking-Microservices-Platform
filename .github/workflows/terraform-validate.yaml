@@ -25,6 +25,7 @@ env:
   TERRAFORM_VERSION: 1.6.0
   TF_STATE_BUCKET: banking-terraform-state-18.10.25
   TF_LOCK_TABLE: terraform-locks
+  AWS_ROLE: github_actions_terraform
   Artifacts_S3_Bucket: my-ci-artifacts55
   Artifacts_S3_Prefix: cloud-infrastructure
   Artifacts_Folder: collected-artifacts
@@ -130,7 +131,7 @@ jobs:
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
-          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/oidc-github
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
           aws_region: ${{ env.AWS_REGION }}
           registry: ${{ env.REGISTRY }}
       - name: Download all artifacts

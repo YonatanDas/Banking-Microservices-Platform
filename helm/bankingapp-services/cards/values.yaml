@@ -27,7 +27,8 @@ networkpolicy:
   targetPorts:
     accounts: 8080
     loans: 8090
-
+  denyAllIngress: true
+  denyAllEgress: true
       
 
 ingress:

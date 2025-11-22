@@ -7,13 +7,14 @@ trim() { awk '{$1=$1;print}'; }
 SERVICE="$(printf '%s' "${1-}" | trim)"
 REGISTRY="$(printf '%s' "${2-}" | trim)"
 AWS_REGION="$(printf '%s' "${3-us-east-1}" | trim)"
+GITHUB_RUN= "$(printf '%s' "${4-}" | trim)"
 
 if [[ -z "${SERVICE}" || -z "${REGISTRY}" ]]; then
   echo "❌ Usage: $0 <SERVICE> <REGISTRY> [AWS_REGION]" >&2
   exit 1
 fi
 
-IMAGE_TAG="latest"
+IMAGE_TAG="${GITHUB_RUN}"
 LOCAL_IMAGE="${SERVICE}:builder"
 REMOTE_IMAGE="${REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 

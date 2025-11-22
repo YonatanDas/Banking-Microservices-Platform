@@ -55,4 +55,7 @@ variable "deletion_protection" {
   default = false
 }
 
+ variable "skip_final_snapshot" {
+   default = true
+ }
 

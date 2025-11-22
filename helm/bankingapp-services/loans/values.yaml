@@ -27,6 +27,8 @@ networkpolicy:
   targetPorts:
     accounts: 8080
     cards: 9000
+  denyAllIngress: true
+  denyAllEgress: true
 
 ingress:
   fromPort: 8072

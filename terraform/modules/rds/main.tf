@@ -20,6 +20,7 @@ resource "aws_db_instance" "this" {
   publicly_accessible     = var.publicly_accessible # Set to true if you want the DB to be publicly accessible
   backup_retention_period = var.backup_retention_period
   deletion_protection     = var.deletion_protection # Set to true to prevent accidental deletion
+  skip_final_snapshot =  var.skip_final_snapshot
   db_name                 = var.db_name
   tags = {
     Name = "${var.environment}-rds"

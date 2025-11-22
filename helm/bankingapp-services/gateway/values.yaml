@@ -32,6 +32,8 @@ networkpolicy:
     accounts: 8080
     loans: 8090
     cards: 9000
+  denyAllIngress: true
+  denyAllEgress: true
 
 hpa:
   enabled: true

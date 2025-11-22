@@ -74,3 +74,9 @@ variable "node_max_size" {
 }
 
 variable "region" {}
+
+variable "alb_controller_role_arn" {
+  description = "IAM role ARN for AWS Load Balancer Controller (for IRSA)"
+  type        = string
+  default     = ""
+}

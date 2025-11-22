@@ -4,11 +4,11 @@ kind: Ingress
 metadata:
   name: {{ .Chart.Name }}
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 spec:
+  ingressClassName: {{ .Values.ingress.className | default "alb" }}
   rules:
     - http:
         paths:
