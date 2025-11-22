@@ -21,3 +21,8 @@ variable "availability_zones" {
 variable "eks_node_sg_id" {
   type = string
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "EKS cluster name for Kubernetes subnet tags"
+}

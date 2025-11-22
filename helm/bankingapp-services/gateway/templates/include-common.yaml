@@ -7,3 +7,15 @@
 ---
 
 {{ include "common.deployment" . }}
+
+---
+
+{{ include "common.networkpolicy" . }}
+
+---
+
+{{ include "common.denyAllIngress" . }}
+
+---
+
+{{ include "common.denyAllEgress" . }}

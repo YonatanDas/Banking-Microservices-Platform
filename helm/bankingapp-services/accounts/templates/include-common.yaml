@@ -10,3 +10,17 @@
 
 ---
 
+{{ include "common.networkpolicy" . }}
+
+---
+
+{{ include "common.hpa" . }}
+
+---
+
+{{ include "common.denyAllIngress" . }}
+
+---
+
+{{ include "common.denyAllEgress" . }}
+

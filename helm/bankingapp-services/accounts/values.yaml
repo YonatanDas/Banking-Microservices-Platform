@@ -16,6 +16,29 @@ image:
 servicePort: 8080
 containerPort: 8080
 
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+  allowToServices:
+    - cards
+    - loans
+  targetPorts:
+    cards: 9000
+    loans: 8090  
+  denyAllIngress: true
+  denyAllEgress: true
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
+
+
 service:
   type: ClusterIP
   port: 8080

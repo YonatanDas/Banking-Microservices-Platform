@@ -14,15 +14,44 @@ global:
   springProfile: dev
 
 image:
-  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gateway
+  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
   tag: v1.0.0
   pullPolicy: IfNotPresent
   
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+    - accounts
+  allowToServices:
+    - cards
+    - loans
+    - accounts
+  targetPorts:
+    accounts: 8080
+    loans: 8090
+    cards: 9000
+  denyAllIngress: true
+  denyAllEgress: false
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
 containerPort: 8072
 servicePort: 8072
 
+ingress:
+  enabled: true
+  className: alb
+  host: "banking.yonatan.cloud" #will add the EKS entrypoint after doing "terraform apply"
+  
 service:
-  type: LoadBalancer  # External entrypoint
+  type: ClusterIP  # External entrypoint
   port: 8072
   targetPort: 8072
   annotations:

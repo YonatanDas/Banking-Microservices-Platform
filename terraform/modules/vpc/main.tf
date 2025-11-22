@@ -31,6 +31,8 @@ resource "aws_subnet" "public" {
   availability_zone       = element(var.availability_zones, count.index)
   tags = {
     Name = "${var.environment}-public-${count.index + 1}"
+    "kubernetes.io/role/elb"         = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 
@@ -44,6 +46,8 @@ resource "aws_subnet" "private" {
   availability_zone = element(var.availability_zones, count.index)
   tags = {
     Name = "${var.environment}-private-${count.index + 1}"
+    "kubernetes.io/role/internal-elb"      = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 

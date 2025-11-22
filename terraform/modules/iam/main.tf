@@ -34,3 +34,9 @@ module "external_secrets_role" {
 module "github_oidc" {
   source = "./github_oidc"
 }
+
+module "alb_controller_role" {
+  source = "./alb_controller_role"
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+}

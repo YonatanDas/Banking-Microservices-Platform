@@ -77,13 +77,89 @@ resource "helm_release" "external_secrets" {
   create_namespace = true
   version          = "0.9.11"
 
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
+
+  depends_on = [
+    aws_eks_cluster.this,
+    aws_iam_openid_connect_provider.eks
+  ]
+}
+
+
+##########################################
+# Helm Release: AWS ALB Controller
+##########################################
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  chart      = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  version    = "1.7.2"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = aws_eks_cluster.this.name
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = var.alb_controller_role_arn
+    },
+    {
+      name  = "region"
+      value = var.region
+    },
+    {
+      name  = "vpcId"
+      value = var.vpc_id
+    }
+  ]
+
   depends_on = [
     aws_eks_cluster.this,
     aws_iam_openid_connect_provider.eks,
+    aws_eks_node_group.default
   ]
 
-  set {
-    name  = "installCRDs"
-    value = "true"
+  timeout = 600 # 10 minutes timeout
+}
+
+
+##########################################
+# Helm Release: Argo CD
+##########################################
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = "argocd"
   }
+}
+
+resource "helm_release" "argocd" {
+  name       = "argocd"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  version    = "5.51.0"
+
+  depends_on = [
+    aws_eks_cluster.this,
+    aws_eks_node_group.default, # Add this
+    helm_release.aws_load_balancer_controller
+  ]
+
+  wait    = true # Add this
+  timeout = 600  # Add this
 }

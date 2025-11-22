@@ -5,6 +5,7 @@ module "vpc" {
   source               = "../../modules/vpc"
   environment          = var.environment
   vpc_cidr             = var.vpc_cidr
+  cluster_name         = var.cluster_name
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
@@ -17,7 +18,7 @@ module "vpc" {
 ############################################
 module "ecr" {
   source        = "../../modules/ecr"
-  service_names = ["accounts", "cards", "loans", "gateway"]
+  service_names = ["accounts", "cards", "loans", "gatewayserver"]
   environment   = var.environment
 }
 
@@ -43,6 +44,7 @@ module "eks" {
   # identifiers
   cluster_name = var.cluster_name
   environment  = var.environment
+  region       = var.aws_region
 
   # networking
   vpc_id          = module.vpc.vpc_id
@@ -50,12 +52,14 @@ module "eks" {
   public_subnets  = module.vpc.public_subnets
 
   # IAM
-  cluster_role_arn = module.iam_cluster_role.eks_cluster_role_arn
-  node_role_arn    = module.iam_node_role.eks_node_role_arn
+  cluster_role_arn        = module.iam_cluster_role.eks_cluster_role_arn
+  alb_controller_role_arn = try(module.alb_controller_role.alb_controller_arn, "")
+  node_role_arn           = module.iam_node_role.eks_node_role_arn
 
   # node group settings
   node_instance_type    = var.node_instance_type
   node_desired_capacity = var.node_desired_capacity
+
 }
 
 ############################################
@@ -142,4 +146,13 @@ module "external_secrets_role" {
 
 module "github_oidc" {
   source = "../../modules/iam/github_oidc"
+}
+
+############################################
+# ALB Controller IAM Role
+############################################
+module "alb_controller_role" {
+  source            = "../../modules/iam/alb_controller_role"
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 }
