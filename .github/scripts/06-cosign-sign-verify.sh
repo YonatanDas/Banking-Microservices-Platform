@@ -5,7 +5,7 @@ trim() { awk '{$1=$1;print}'; }
 
 REGISTRY="$(printf '%s' "${1-}" | trim)"
 SERVICE="$(printf '%s' "${2-}" | trim)"
-GITHUB_RUN= "$(printf '%s' "${3-}" | trim)"
+GITHUB_RUN="$(printf '%s' "${3-}" | trim)"
 
 if [[ -z "$REGISTRY" || -z "$SERVICE" ]]; then
   echo "Usage: script <REGISTRY> <SERVICE>"
