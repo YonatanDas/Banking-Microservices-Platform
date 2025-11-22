@@ -7,7 +7,7 @@ trim() { awk '{$1=$1;print}'; }
 SERVICE="$(printf '%s' "${1-}" | trim)"
 REGISTRY="$(printf '%s' "${2-}" | trim)"
 AWS_REGION="$(printf '%s' "${3-us-east-1}" | trim)"
-GITHUB_RUN= "$(printf '%s' "${4-}" | trim)"
+GITHUB_RUN="$(printf '%s' "${4-}" | trim)"
 
 if [[ -z "${SERVICE}" || -z "${REGISTRY}" ]]; then
   echo "❌ Usage: $0 <SERVICE> <REGISTRY> [AWS_REGION]" >&2

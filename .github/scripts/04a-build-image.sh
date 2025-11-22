@@ -4,7 +4,7 @@ trim() { awk '{$1=$1;print}'; }
 
 GITHUB_SHA="$(printf '%s' "${1-}" | trim)"
 SERVICE="$(printf '%s' "${2-}" | trim)"
-GITHUB_RUN= "$(printf '%s' "${3-}" | trim)"
+GITHUB_RUN="$(printf '%s' "${3-}" | trim)"
 CACHE_DIR="/tmp/.buildx-cache"
 NEW_CACHE_DIR="/tmp/.buildx-cache-new"
 REPORT_DIR=".ci_artifacts/${SERVICE}/${GITHUB_SHA}/build/jar-files"
