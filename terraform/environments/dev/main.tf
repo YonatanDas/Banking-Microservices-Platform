@@ -5,7 +5,6 @@ module "vpc" {
   source               = "../../modules/vpc"
   environment          = var.environment
   vpc_cidr             = var.vpc_cidr
-  cluster_name         = var.cluster_name
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
@@ -53,7 +52,7 @@ module "eks" {
 
   # IAM
   cluster_role_arn        = module.iam_cluster_role.eks_cluster_role_arn
-  alb_controller_role_arn = try(module.alb_controller_role.alb_controller_arn, "")
+  alb_controller_role_arn = module.alb_controller_role.alb_controller
   node_role_arn           = module.iam_node_role.eks_node_role_arn
 
   # node group settings
@@ -154,5 +153,4 @@ module "github_oidc" {
 module "alb_controller_role" {
   source            = "../../modules/iam/alb_controller_role"
   oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url = module.eks.oidc_provider_url
 }

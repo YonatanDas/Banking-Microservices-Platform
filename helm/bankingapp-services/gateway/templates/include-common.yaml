@@ -10,10 +10,13 @@
 
 ---
 
+<<<<<<< HEAD
 {{ include "common.networkpolicy" . }}
 
 ---
 
+=======
+>>>>>>> 4e9b5a8d2e4c6f27ae7a4764892d454536d185fd
 {{ include "common.denyAllIngress" . }}
 
 ---
