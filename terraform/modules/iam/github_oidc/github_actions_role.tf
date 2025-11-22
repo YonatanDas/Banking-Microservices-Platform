@@ -45,17 +45,17 @@ resource "aws_iam_policy" "github_actions_policy" {
 
       # EKS access (depending on your security level)
       {
-        "Effect": "Allow",
-        "Action": [
+        "Effect" : "Allow",
+        "Action" : [
           "s3:PutObject",
           "s3:GetObject",
           "s3:PutObjectAcl",
           "s3:ListBucket"
         ]
-         "Resource": [
-        "arn:aws:s3:::my-ci-artifacts55",
-        "arn:aws:s3:::my-ci-artifacts55/*"
-      ]
+        "Resource" : [
+          "arn:aws:s3:::my-ci-artifacts55",
+          "arn:aws:s3:::my-ci-artifacts55/*"
+        ]
       },
 
       # kubectl access (via auth token)

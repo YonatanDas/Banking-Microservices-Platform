@@ -1,3 +1,3 @@
 variable "oidc_provider_arn" {
-    type = string
+  type = string
 }
