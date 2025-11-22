@@ -15,3 +15,15 @@ output "eso_role_arn" {
   description = "IAM Role ARN for External Secrets Operator"
   value       = aws_iam_role.eso_role.arn
 }
+
+output "github_actions_role_arn" {
+  value = aws_iam_role.github_actions.arn
+}
+
+output "github_actions_terraform_role_arn" {
+  value = aws_iam_role.github_actions_terraform.arn
+}
+
+output "alb_controller" {
+    value = aws_iam_role.alb_controller.arn
+}

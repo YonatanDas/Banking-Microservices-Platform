@@ -52,6 +52,7 @@ module "eks" {
 
   # IAM
   cluster_role_arn = module.iam_cluster_role.eks_cluster_role_arn
+  alb_controller_role_arn = module.alb_controller_role.alb_controller
   node_role_arn    = module.iam_node_role.eks_node_role_arn
 
   # node group settings
@@ -144,4 +145,12 @@ module "external_secrets_role" {
 
 module "github_oidc" {
   source = "../../modules/iam/github_oidc"
+}
+
+############################################
+# ALB Controller IAM Role
+############################################
+module "alb_controller_role" {
+  source            = "../../modules/iam/alb_controller_role"
+  oidc_provider_arn = module.eks.oidc_provider_arn
 }
