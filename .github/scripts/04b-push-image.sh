@@ -15,7 +15,7 @@ if [[ -z "${SERVICE}" || -z "${REGISTRY}" ]]; then
 fi
 
 IMAGE_TAG="${GITHUB_RUN}"
-LOCAL_IMAGE="${SERVICE}:builder"
+LOCAL_IMAGE="${SERVICE}:${IMAGE_TAG}"
 REMOTE_IMAGE="${REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 
 echo "🔎 Debug (local images matching '${SERVICE}')"

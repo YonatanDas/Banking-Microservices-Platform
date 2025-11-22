@@ -25,5 +25,5 @@ output "github_actions_terraform_role_arn" {
 }
 
 output "alb_controller" {
-    value = aws_iam_role.alb_controller.arn
+  value = aws_iam_role.alb_controller.arn
 }

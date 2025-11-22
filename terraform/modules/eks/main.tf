@@ -84,7 +84,7 @@ resource "helm_release" "external_secrets" {
     }
   ]
 
-   depends_on = [
+  depends_on = [
     aws_eks_cluster.this,
     aws_iam_openid_connect_provider.eks
   ]
@@ -101,7 +101,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   version    = "1.7.2"
 
-    set = [
+  set = [
     {
       name  = "clusterName"
       value = aws_eks_cluster.this.name
@@ -128,13 +128,13 @@ resource "helm_release" "aws_load_balancer_controller" {
     }
   ]
 
-   depends_on = [
+  depends_on = [
     aws_eks_cluster.this,
     aws_iam_openid_connect_provider.eks,
     aws_eks_node_group.default
   ]
 
-  timeout = 600  # 10 minutes timeout
+  timeout = 600 # 10 minutes timeout
 }
 
 
@@ -156,10 +156,10 @@ resource "helm_release" "argocd" {
 
   depends_on = [
     aws_eks_cluster.this,
-    aws_eks_node_group.default,  # Add this
+    aws_eks_node_group.default, # Add this
     helm_release.aws_load_balancer_controller
   ]
-  
-  wait = true  # Add this
+
+  wait    = true # Add this
   timeout = 600  # Add this
 }

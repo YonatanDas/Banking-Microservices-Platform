@@ -14,7 +14,7 @@ global:
   springProfile: dev
 
 image:
-  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gateway
+  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
   tag: v1.0.0
   pullPolicy: IfNotPresent
   

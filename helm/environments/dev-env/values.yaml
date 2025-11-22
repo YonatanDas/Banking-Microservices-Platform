@@ -21,31 +21,34 @@ configMapName: bankingapp-config
 # Per-service overrides
 accounts:
   serviceAccount:
+    create: true
     name: accounts-sa
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-accounts-rds-access-role
   image:
-    tag: v1.0.0
+    tag: 5
   replicaCount: 1
   secretName: dev-db-credentials
 
 cards:
   serviceAccount:
+    create: true
     name: cards-sa
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-cards-rds-access-role
   image:
-    tag: v1.0.0
+    tag: 5
   replicaCount: 1
   secretName: dev-db-credentials
 
 loans:
   serviceAccount:
+    create: true
     name: loans-sa
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-loans-rds-access-role
   image:
-    tag: v1.0.0
+    tag: 5
   replicaCount: 1
   secretName: dev-db-credentials
 
@@ -54,8 +57,8 @@ gateway:
     create: true
     name: gateway-sa
   image:
-    tag: v1.0.0
+    tag: 5
   replicaCount: 1
   secretName: dev-db-credentials
   service:
-    type: LoadBalancer
+    type: ClusterIP

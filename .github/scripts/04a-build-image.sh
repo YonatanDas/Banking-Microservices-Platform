@@ -19,13 +19,18 @@ echo "🧱 Building Docker image locally: ${IMAGE_URI}"
 
 docker buildx use mybuilder 
 docker buildx inspect --bootstrap
-
 docker buildx build \
   --cache-from "type=local,src=${CACHE_DIR}" \
   --cache-to "type=local,dest=${NEW_CACHE_DIR},mode=max" \
   --target builder \
+  -f ${SERVICE_DIR}/Dockerfile \
+  ${SERVICE_DIR} || true
+
+docker buildx build \
+  --cache-from "type=local,src=${CACHE_DIR}" \
+  --cache-to "type=local,dest=${NEW_CACHE_DIR},mode=max" \
   --load \
-  -t ${SERVICE}:builder \
+  -t ${SERVICE}:${IMAGE_TAG} \
   -f ${SERVICE_DIR}/Dockerfile \
   ${SERVICE_DIR}
 

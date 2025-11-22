@@ -30,14 +30,14 @@ spec:
           env:
 
             - name: AWS_REGION
-              value: {{ .Values.global.aws.region }}
+              value: {{ .Values.global.aws.region | quote }}
 
             - name: build.version
-              value: {{ .Values.image.tag | default "1.0.0" }}
+              value: {{ .Values.image.tag | default "1.0.0" | quote }}
 
           {{- if and .Values.secretName }}
             - name: DB_SECRET_NAME
-              value: {{ .Values.secretName }}
+              value: {{ .Values.secretName | quote }}
           {{- end }}
 
           # ---------- CONFIG + SECRETS ----------

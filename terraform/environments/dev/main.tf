@@ -17,7 +17,7 @@ module "vpc" {
 ############################################
 module "ecr" {
   source        = "../../modules/ecr"
-  service_names = ["accounts", "cards", "loans", "gateway"]
+  service_names = ["accounts", "cards", "loans", "gatewayserver"]
   environment   = var.environment
 }
 
@@ -43,7 +43,7 @@ module "eks" {
   # identifiers
   cluster_name = var.cluster_name
   environment  = var.environment
-  region = var.aws_region
+  region       = var.aws_region
 
   # networking
   vpc_id          = module.vpc.vpc_id
@@ -51,9 +51,9 @@ module "eks" {
   public_subnets  = module.vpc.public_subnets
 
   # IAM
-  cluster_role_arn = module.iam_cluster_role.eks_cluster_role_arn
+  cluster_role_arn        = module.iam_cluster_role.eks_cluster_role_arn
   alb_controller_role_arn = module.alb_controller_role.alb_controller
-  node_role_arn    = module.iam_node_role.eks_node_role_arn
+  node_role_arn           = module.iam_node_role.eks_node_role_arn
 
   # node group settings
   node_instance_type    = var.node_instance_type
