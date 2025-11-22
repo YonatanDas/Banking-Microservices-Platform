@@ -11,7 +11,7 @@ resource "aws_iam_role" "github_actions" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Multi-env-Banking-App:*"
+          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Multi-Environment-Microservices:*"
         }
       }
     }]
@@ -32,6 +32,8 @@ resource "aws_iam_policy" "github_actions_policy" {
         Action = [
           "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
           "ecr:CompleteLayerUpload",
           "ecr:UploadLayerPart",
           "ecr:InitiateLayerUpload",

@@ -17,7 +17,7 @@ module "vpc" {
 ############################################
 module "ecr" {
   source        = "../../modules/ecr"
-  service_names = ["accounts", "cards", "loans", "gateway"]
+  service_names = ["accounts", "cards", "loans", "gatewayserver"]
   environment   = var.environment
 }
 
