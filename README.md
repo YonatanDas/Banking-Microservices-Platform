@@ -148,6 +148,7 @@ This simulates how a real company would **modernize a legacy service into a secu
 
 ## 3. Cloud Architecture Diagram
 
+
 ```mermaid
 flowchart LR
   subgraph CICD["GitHub Actions"]
