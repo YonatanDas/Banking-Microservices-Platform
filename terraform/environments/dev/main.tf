@@ -8,7 +8,7 @@ module "vpc" {
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
-
+  cluster_name         = var.cluster_name
   eks_node_sg_id = module.eks.node_sg_id
 }
 
@@ -153,4 +153,6 @@ module "github_oidc" {
 module "alb_controller_role" {
   source            = "../../modules/iam/alb_controller_role"
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+  cluster_name      = var.cluster_name
 }

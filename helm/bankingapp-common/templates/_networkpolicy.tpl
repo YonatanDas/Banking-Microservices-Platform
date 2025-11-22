@@ -16,13 +16,10 @@ spec:
     - Egress
 
   ingress:
-<<<<<<< HEAD
   {{- if eq .Chart.Name "gateway" }}
   # Gateway: Allow traffic from anywhere (ALB/Ingress Controller)
   - {}
   {{- else }}
-=======
->>>>>>> 4e9b5a8d2e4c6f27ae7a4764892d454536d185fd
   # Allow traffic from gateway → this service
   - from:
       - podSelector:
