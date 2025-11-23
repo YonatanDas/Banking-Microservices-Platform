@@ -64,6 +64,7 @@ fi
 
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
+git config pull.rebase true
 
 
 # Check if there are changes (compare against HEAD, handles both tracked and untracked files)
@@ -83,7 +84,7 @@ git commit -m "chore: update ${HELM_SERVICE} image tag to ${IMAGE_TAG} [skip ci]
 }
 
 echo "🚀 Pushing to repository..."
-git pull origin main
+git pull --rebase origin main
 git push || {
   echo "⚠️  Push failed. This might be expected if running in a PR." >&2
   exit 1
