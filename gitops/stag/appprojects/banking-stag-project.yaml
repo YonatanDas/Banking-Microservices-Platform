@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: banking-stag-project
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  sourceRepos:
+    - 'https://github.com/yonatandas/Multi-Environment-Microservices.git'
+    - '*'
+  
+  destinations:
+    - namespace: default
+      server: https://kubernetes.default.svc
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: '*'
+    - group: 'apps'
+      kind: '*'
+    - group: 'autoscaling'
+      kind: '*'
+    - group: 'networking.k8s.io'
+      kind: '*'
+    - group: 'external-secrets.io'
+      kind: '*'
+  
+  roles:
+    - name: stag-admin
+      description: Staging environment administrator
+      policies:
+        - p, proj:banking-stag-project:stag-admin, applications, *, banking-stag-project/*, allow
+        - p, proj:banking-stag-project:stag-admin, repositories, get, banking-stag-project/*, allow
+      groups:
+        - staging-team
+

@@ -1,0 +1,44 @@
+# Argo CD Image Updater Configuration for Staging Environment
+# This file documents the Image Updater configuration
+# Actual configuration is done via Application annotations (see banking-app-stag.yaml)
+
+# Image Updater Settings:
+# - Enabled via annotations in banking-app-stag.yaml
+# - Write-back method: Git (commits changes to repository)
+# - Update strategy: Semantic versioning (semver)
+# - Target branch: main
+# - Target path: helm/environments/stag-env/values.yaml
+
+# ECR Repository Mappings:
+# - accounts: 063630846340.dkr.ecr.us-east-1.amazonaws.com/accounts
+# - cards: 063630846340.dkr.ecr.us-east-1.amazonaws.com/cards
+# - loans: 063630846340.dkr.ecr.us-east-1.amazonaws.com/loans
+# - gatewayserver: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
+
+# Update Behavior:
+# - Staging uses semver strategy (allows patch, minor, major updates)
+# - More conservative than dev - consider restricting to patch/minor only
+# - Image Updater scans ECR for new tags matching semver pattern
+# - When new image is found, updates values.yaml and commits to Git
+# - Argo CD syncs based on sync policy (automated or manual)
+
+# Tag Promotion Strategy:
+# - Consider promoting only tested tags from dev to staging
+# - May want to restrict to patch versions only: semver:~1.0.0
+# - Or use specific tag promotion workflow via GitHub Actions
+
+# To enable Image Updater:
+# 1. Install Argo CD Image Updater in the cluster
+# 2. Configure GitHub credentials in Argo CD
+# 3. Ensure Image Updater has ECR read and Git write permissions
+# 4. Annotations in banking-app-stag.yaml will be processed automatically
+
+# To disable Image Updater:
+# - Remove or comment out annotations in banking-app-stag.yaml
+# - Or set update-strategy to "none" for specific images
+
+# Alternative: Manual Image Tag Updates
+# If not using Image Updater, update image tags manually in:
+# - helm/environments/stag-env/values.yaml
+# - Commit and push to trigger Argo CD sync
+

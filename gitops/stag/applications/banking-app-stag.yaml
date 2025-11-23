@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: banking-app-stag
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: |
+      accounts=063630846340.dkr.ecr.us-east-1.amazonaws.com/accounts,
+      cards=063630846340.dkr.ecr.us-east-1.amazonaws.com/cards,
+      loans=063630846340.dkr.ecr.us-east-1.amazonaws.com/loans,
+      gatewayserver=063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/accounts.update-strategy: semver
+    argocd-image-updater.argoproj.io/cards.update-strategy: semver
+    argocd-image-updater.argoproj.io/loans.update-strategy: semver
+    argocd-image-updater.argoproj.io/gatewayserver.update-strategy: semver
+spec:
+  project: banking-stag-project
+  
+  source:
+    repoURL: https://github.com/yonatandas/Multi-Environment-Microservices.git
+    targetRevision: main
+    path: helm/environments/stag-env
+    helm:
+      valueFiles:
+        - values.yaml
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+
