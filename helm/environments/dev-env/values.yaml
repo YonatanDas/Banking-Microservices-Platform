@@ -8,7 +8,6 @@ global:
   otelMetricsExporter: none
   otelLogsExporter: none
   
-  
   eso:
     enabled: true
     namespace: default
