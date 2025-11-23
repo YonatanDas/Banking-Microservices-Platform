@@ -8,7 +8,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Chart.Name }}
+    name: {{ .Values.deploymentName }}
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
   metrics:
