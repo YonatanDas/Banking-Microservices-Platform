@@ -5,6 +5,9 @@ type: application
 version: 0.1.0
 
 dependencies:
+  - name: bankingapp-common
+    version: 0.1.0
+    repository: file://../../bankingapp-common
   - name: accounts
     version: 0.1.0
     repository: "file://../../bankingapp-services/accounts"
