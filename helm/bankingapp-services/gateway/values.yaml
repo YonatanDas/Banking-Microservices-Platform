@@ -33,11 +33,7 @@ networkpolicy:
     loans: 8090
     cards: 9000
   denyAllIngress: true
-<<<<<<< HEAD
   denyAllEgress: false
-=======
-  denyAllEgress: true
->>>>>>> 4e9b5a8d2e4c6f27ae7a4764892d454536d185fd
 
 hpa:
   enabled: true
