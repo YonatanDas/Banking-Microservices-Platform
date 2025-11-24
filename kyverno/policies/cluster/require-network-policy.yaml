@@ -63,4 +63,5 @@ spec:
                 - kyverno
                 - argocd
                 - external-secrets
+                - monitoring
 
