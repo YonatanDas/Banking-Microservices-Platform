@@ -38,7 +38,7 @@ chmod +x /usr/local/bin/yq
 
 # Function to apply our change (used after rebase)
 apply_tag_update() {
-  yq eval ".${HELM_SERVICE}.image.tag = \"${IMAGE_TAG}\"" -i "${TAGS_FILE}"
+  yq eval ".${HELM_SERVICE}.image.tag = ${IMAGE_TAG}" -i "${TAGS_FILE}"
   
   # Verify the update
   if yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" | grep -q "^${IMAGE_TAG}$"; then

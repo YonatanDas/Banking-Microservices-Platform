@@ -182,15 +182,14 @@ jobs:
             "${{ env.AWS_REGION }}" \
             "${{ github.run_number }}"
 
+      - name: Update Docker Cache
+        run: ./.github/scripts/05-docker-cache-cleanup.sh
+
       - name: Update Helm Image Tags
         run: ./.github/scripts/14-update-helm-values.sh \
             "${{ env.SERVICE }}" \
             "${{ github.run_number }}" \
             "dev"
-
-
-      - name: Update Docker Cache
-        run: ./.github/scripts/05-docker-cache-cleanup.sh
 
       - name: Save Build Metadata
         run: echo "Image built at $(date)" > build-info.txt
