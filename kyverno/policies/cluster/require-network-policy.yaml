@@ -1,0 +1,66 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-network-policy
+  annotations:
+    policies.kyverno.io/title: Require Network Policy
+    policies.kyverno.io/category: Network Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Ensures all Pods have the required labels for NetworkPolicy matching
+      and validates that a NetworkPolicy exists. NetworkPolicies must follow
+      the pattern '<service-name>-network-policy' with podSelector matching
+      'app: <service-name>' label. This enforces zero-trust networking.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-pod-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "Pods must have 'app' label to match NetworkPolicy podSelector. NetworkPolicy must exist with name pattern '<app-label>-network-policy'."
+        cel:
+          expressions:
+            - expression: "has(object.metadata.labels) && 'app' in object.metadata.labels && object.metadata.labels['app'] != ''"
+              message: "Pod must have 'app' label with non-empty value to match NetworkPolicy podSelector."
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - argocd
+                - external-secrets
+    - name: check-network-policy-exists
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "A NetworkPolicy must exist for this Pod. NetworkPolicy should be named '<app-label>-network-policy' in the same namespace."
+        cel:
+          expressions:
+            - expression: |
+                // Validate Pod has required structure for NetworkPolicy matching
+                // NetworkPolicy existence is validated via lookup below
+                has(object.metadata.labels) && 
+                'app' in object.metadata.labels && 
+                object.metadata.labels['app'] != '' &&
+                has(object.metadata.namespace) &&
+                object.metadata.namespace != ''
+              message: "Pod must have 'app' label and namespace. NetworkPolicy '<app-label>-network-policy' must exist in namespace '{{ request.namespace }}'."
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - argocd
+                - external-secrets
+

@@ -1,0 +1,89 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: block-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Block Privileged Containers
+    policies.kyverno.io/category: Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
+    policies.kyverno.io/description: >-
+      Prevents containers from running with privileged mode or dangerous
+      capabilities. Privileged containers have host-level access and can
+      compromise cluster security.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-privileged
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Deployment
+                - StatefulSet
+                - DaemonSet
+                - Job
+                - CronJob
+      validate:
+        message: "Privileged containers are not allowed. Remove 'privileged: true', 'allowPrivilegeEscalation: true', and dangerous capabilities (SYS_ADMIN, NET_ADMIN, SYS_RAWIO, SYS_MODULE, SYS_TIME)."
+        deny:
+          conditions:
+            any:
+              # Check containers for privileged
+              - key: "{{ request.object.spec.containers[?securityContext.privileged == `true`] }}"
+                operator: AnyIn
+                value: ["*"]
+              # Check containers for allowPrivilegeEscalation
+              - key: "{{ request.object.spec.containers[?securityContext.allowPrivilegeEscalation == `true`] }}"
+                operator: AnyIn
+                value: ["*"]
+              # Check containers for dangerous capabilities - check each one separately
+              - key: "{{ request.object.spec.containers[?securityContext.capabilities.add[?@ == 'SYS_ADMIN']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.containers[?securityContext.capabilities.add[?@ == 'NET_ADMIN']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.containers[?securityContext.capabilities.add[?@ == 'SYS_RAWIO']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.containers[?securityContext.capabilities.add[?@ == 'SYS_MODULE']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.containers[?securityContext.capabilities.add[?@ == 'SYS_TIME']] }}"
+                operator: AnyIn
+                value: ["*"]
+              # Check initContainers for privileged
+              - key: "{{ request.object.spec.initContainers[?securityContext.privileged == `true`] }}"
+                operator: AnyIn
+                value: ["*"]
+              # Check initContainers for allowPrivilegeEscalation
+              - key: "{{ request.object.spec.initContainers[?securityContext.allowPrivilegeEscalation == `true`] }}"
+                operator: AnyIn
+                value: ["*"]
+              # Check initContainers for dangerous capabilities
+              - key: "{{ request.object.spec.initContainers[?securityContext.capabilities.add[?@ == 'SYS_ADMIN']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.initContainers[?securityContext.capabilities.add[?@ == 'NET_ADMIN']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.initContainers[?securityContext.capabilities.add[?@ == 'SYS_RAWIO']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.initContainers[?securityContext.capabilities.add[?@ == 'SYS_MODULE']] }}"
+                operator: AnyIn
+                value: ["*"]
+              - key: "{{ request.object.spec.initContainers[?securityContext.capabilities.add[?@ == 'SYS_TIME']] }}"
+                operator: AnyIn
+                value: ["*"]
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - argocd
+                - external-secrets

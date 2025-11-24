@@ -1,0 +1,43 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-hostpath-mounts
+  annotations:
+    policies.kyverno.io/title: Deny HostPath Mounts
+    policies.kyverno.io/category: Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
+    policies.kyverno.io/description: >-
+      Prevents Pods from mounting host filesystem paths. HostPath volumes
+      give containers access to the host filesystem, creating security risks.
+      Use PersistentVolumeClaims, ConfigMaps, or Secrets instead.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-hostpath
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Deployment
+                - StatefulSet
+                - DaemonSet
+                - Job
+                - CronJob
+      validate:
+        message: "HostPath volumes are not allowed. Use PersistentVolumeClaims, ConfigMaps, or Secrets instead."
+        pattern:
+          spec:
+            volumes:
+              - X(hostPath): "null"
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - argocd
+                - external-secrets
+

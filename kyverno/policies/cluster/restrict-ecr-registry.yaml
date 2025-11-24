@@ -1,0 +1,51 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-ecr-registry
+  annotations:
+    policies.kyverno.io/title: Restrict Image Sources to ECR
+    policies.kyverno.io/category: Image Verification
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
+    policies.kyverno.io/description: >-
+      Only allows container images from the trusted ECR registry.
+      Blocks images from public registries (Docker Hub, Quay, GCR) to prevent
+      deployment of untrusted or potentially malicious images.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-registry
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+                - Deployment
+                - StatefulSet
+                - DaemonSet
+                - Job
+                - CronJob
+      validate:
+        message: "Only images from ECR registry '063630846340.dkr.ecr.us-east-1.amazonaws.com' are allowed."
+        anyPattern:
+          - spec:
+              containers:
+                - name: "*"
+                  image: "063630846340.dkr.ecr.us-east-1.amazonaws.com/*"
+              X(initContainers): "null"
+          - spec:
+              containers:
+                - name: "*"
+                  image: "063630846340.dkr.ecr.us-east-1.amazonaws.com/*"
+              initContainers:
+                - name: "*"
+                  image: "063630846340.dkr.ecr.us-east-1.amazonaws.com/*"
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kyverno
+                - argocd
+                - external-secrets

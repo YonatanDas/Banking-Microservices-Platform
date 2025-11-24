@@ -13,10 +13,18 @@ spec:
   destinations:
     - namespace: default
       server: https://kubernetes.default.svc
+    - namespace: kyverno
+      server: https://kubernetes.default.svc
   
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
+    - group: 'kyverno.io'
+      kind: ClusterPolicy
+    - group: 'kyverno.io'
+      kind: Policy
+    - group: 'external-secrets.io'
+      kind: ClusterSecretStore
   
   namespaceResourceWhitelist:
     - group: ''
