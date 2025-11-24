@@ -39,10 +39,18 @@ data "aws_iam_policy_document" "image_updater_policy" {
   statement {
     effect = "Allow"
     actions = [
+      "ecr:GetAuthorizationToken"
+    ]
+    resources = ["*"]
+  }
+
+  # Repository-specific actions
+  statement {
+    effect = "Allow"
+    actions = [
       "ecr:DescribeImages",
       "ecr:ListImages",
-      "ecr:DescribeRepositories",
-      "ecr:GetAuthorizationToken"
+      "ecr:DescribeRepositories"
     ]
     resources = var.ecr_repository_arns
   }

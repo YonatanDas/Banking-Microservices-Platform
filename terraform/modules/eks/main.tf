@@ -84,12 +84,11 @@ resource "helm_release" "external_secrets" {
   timeout         = 600
   wait_for_jobs   = false
 
-  set = [
-    {
-      name  = "installCRDs"
-      value = "true"
-    }
-  ]
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+
 
   depends_on = [
     aws_eks_cluster.this,
@@ -115,32 +114,35 @@ resource "helm_release" "aws_load_balancer_controller" {
   timeout         = 600
   wait_for_jobs   = false
 
-  set = [
-    {
-      name  = "clusterName"
-      value = aws_eks_cluster.this.name
-    },
-    {
-      name  = "serviceAccount.create"
-      value = "true"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = "aws-load-balancer-controller"
-    },
-    {
-      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = var.alb_controller_role_arn
-    },
-    {
-      name  = "region"
-      value = var.region
-    },
-    {
-      name  = "vpcId"
-      value = var.vpc_id
-    }
-  ]
+  set {
+    name  = "clusterName"
+    value = aws_eks_cluster.this.name
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "true"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = var.alb_controller_role_arn
+  }
+
+  set {
+    name  = "region"
+    value = var.region
+  }
+
+  set {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
 
   depends_on = [
     aws_eks_cluster.this,
@@ -159,7 +161,7 @@ resource "kubernetes_namespace" "argocd" {
   }
 
   timeouts {
-    delete = "10m"
+    delete = "5m"
   }
 }
 
@@ -171,12 +173,11 @@ resource "helm_release" "argocd" {
   chart      = "argo-cd"
   version    = "5.51.0"
 
-  set = [
-    {
-      name  = "server.service.type"
-      value = "LoadBalancer"
-    }
-  ]
+  set {
+    name  = "server.service.type"
+    value = "ClusterIP"
+  }
+
 
   depends_on = [
     aws_eks_cluster.this,
@@ -192,75 +193,76 @@ resource "helm_release" "argocd" {
 }
 
 ##########################################
-# ConfigMap for Image Updater Registry Configuration
+# Helm Release: Kyverno
 ##########################################
-resource "kubernetes_config_map" "argocd_image_updater_registries" {
-  metadata {
-    name      = "argocd-image-updater-config"
-    namespace = kubernetes_namespace.argocd.metadata[0].name
+resource "helm_release" "kyverno" {
+  name       = "kyverno"
+  namespace  = "kyverno"
+  repository = "https://kyverno.github.io/kyverno/"
+  chart      = "kyverno"
+  version    = "3.1.0"
+
+  create_namespace = true
+
+  set {
+    name  = "replicaCount"
+    value = "3"
   }
 
-  data = {
-    "registries.conf" = <<-EOT
-      registries:
-      - name: ECR
-        api_url: https://063630846340.dkr.ecr.us-east-1.amazonaws.com
-        prefix: 063630846340.dkr.ecr.us-east-1.amazonaws.com
-        credstype: ecr
-        region: us-east-1
-    EOT
+  set {
+    name  = "initContainer.image.registry"
+    value = "ghcr.io"
   }
 
-  depends_on = [
-    kubernetes_namespace.argocd
-  ]
-}
-
-##########################################
-# ServiceAccount for Argo CD Image Updater with IRSA
-##########################################
-resource "kubernetes_service_account" "argocd_image_updater" {
-  metadata {
-    name      = "argocd-image-updater"
-    namespace = kubernetes_namespace.argocd.metadata[0].name
-    annotations = {
-      "eks.amazonaws.com/role-arn" = var.argocd_image_updater_role_arn
-    }
+  set {
+    name  = "initContainer.image.repository"
+    value = "kyverno/kyvernopre"
   }
 
-  depends_on = [
-    aws_eks_cluster.this,
-    aws_iam_openid_connect_provider.eks
-  ]
-}
+  set {
+    name  = "initContainer.image.tag"
+    value = "v1.12.0"
+  }
 
-##########################################
-# Helm Release: Argo CD Image Updater
-##########################################
-resource "helm_release" "argocd_image_updater" {
-  name       = "argocd-image-updater"
-  namespace  = kubernetes_namespace.argocd.metadata[0].name
-  repository = "https://argoproj.github.io/argo-helm"
-  chart      = "argocd-image-updater"
-  version    = "0.9.0"
+  set {
+    name  = "metricsService.enabled"
+    value = "true"
+  }
 
-  set = [
-    {
-      name  = "serviceAccount.create"
-      value = "false"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = kubernetes_service_account.argocd_image_updater.metadata[0].name
-    }
-  ]
+  set {
+    name  = "backgroundController.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+
+  set {
+    name  = "resources.limits.cpu"
+    value = "500m"
+  }
+
+  set {
+    name  = "resources.limits.memory"
+    value = "512Mi"
+  }
+
+  set {
+    name  = "resources.requests.cpu"
+    value = "100m"
+  }
+
+  set {
+    name  = "resources.requests.memory"
+    value = "128Mi"
+  }
 
   depends_on = [
     aws_eks_cluster.this,
     aws_eks_node_group.default,
-    aws_iam_openid_connect_provider.eks,
-    helm_release.argocd,
-    kubernetes_service_account.argocd_image_updater
+    helm_release.argocd
   ]
 
   atomic          = true

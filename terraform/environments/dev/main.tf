@@ -51,10 +51,9 @@ module "eks" {
   public_subnets  = module.vpc.public_subnets
 
   # IAM
-  cluster_role_arn              = module.iam_cluster_role.eks_cluster_role_arn
-  alb_controller_role_arn       = module.alb_controller_role.alb_controller
-  node_role_arn                 = module.iam_node_role.eks_node_role_arn
-  argocd_image_updater_role_arn = module.argocd_image_updater_role.image_updater_role_arn
+  cluster_role_arn        = module.iam_cluster_role.eks_cluster_role_arn
+  alb_controller_role_arn = module.alb_controller_role.alb_controller
+  node_role_arn           = module.iam_node_role.eks_node_role_arn
 
   # node group settings
   node_instance_type    = var.node_instance_type
