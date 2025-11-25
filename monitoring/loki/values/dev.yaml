@@ -1,8 +1,10 @@
 loki:
   auth_enabled: false
   
-  # Explicit schema config for dev environment
-  # Note: useTestSchema and schemaConfig conflict - using schemaConfig only
+  # Use test schema for quick dev testing (no persistence required)
+  useTestSchema: true
+  
+  # Also provide explicit schemaConfig for S3 storage
   schemaConfig:
     configs:
       - from: "2024-01-01"

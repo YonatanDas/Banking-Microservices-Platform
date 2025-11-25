@@ -11,6 +11,8 @@ opentelemetry-collector:
         endpoint: http://kube-prometheus-stack-prometheus:9090/api/v1/write
       loki:
         endpoint: http://loki-gateway:80/loki/api/v1/push
+      debug:
+        verbosity: detailed
     processors:
       batch:
         timeout: 10s
@@ -32,10 +34,11 @@ opentelemetry-collector:
             endpoint: 0.0.0.0:4318
     service:
       pipelines:
+        # Note: Loki doesn't support traces. Use debug exporter for traces in dev.
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch, resource]
-          exporters: [loki]  # Export traces to Loki (or use debug exporter for testing)
+          exporters: [debug]
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
