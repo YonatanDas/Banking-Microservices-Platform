@@ -1,7 +1,7 @@
 loki:
   auth_enabled: false
   
-  # Use test schema for quick testing in dev
+  # Explicitly set test schema for dev environment
   useTestSchema: true
   
   storage:

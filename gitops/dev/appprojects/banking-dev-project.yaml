@@ -21,6 +21,10 @@ spec:
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
     - group: 'external-secrets.io'
       kind: ClusterSecretStore
     - group: 'kyverno.io'
@@ -42,6 +46,8 @@ spec:
     - group: 'external-secrets.io'
       kind: '*'
     - group: 'monitoring.coreos.com'
+      kind: '*'
+    - group: 'rbac.authorization.k8s.io'
       kind: '*'
   
   roles:

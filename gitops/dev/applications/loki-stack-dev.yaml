@@ -13,6 +13,9 @@ spec:
     helm:
       valueFiles:
         - values/dev.yaml
+      values: |
+        loki:
+          useTestSchema: true
   
   destination:
     server: https://kubernetes.default.svc
