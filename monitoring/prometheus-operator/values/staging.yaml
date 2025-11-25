@@ -1,0 +1,35 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      retention: 30d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 100Gi
+
+  grafana:
+    adminPassword: external-secrets
+    service:
+      type: ClusterIP  # Internal only - access via port-forward
+    persistence:
+      enabled: true
+      size: 20Gi
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            url: http://kube-prometheus-stack-prometheus:9090
+            isDefault: true
+          - name: Loki
+            type: loki
+            url: http://loki-gateway:80
+          - name: Tempo
+            type: tempo
+            url: http://tempo:3200
+

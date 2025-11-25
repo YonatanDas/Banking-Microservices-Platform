@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "title": "JVM Metrics - Banking App (Staging)",
+    "tags": ["jvm", "java", "staging"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "JVM Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{application=~\"accounts|cards|loans|gateway\"}",
+            "legendFormat": "{{application}} - {{area}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "GC Pause Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "jvm_gc_pause_seconds{application=~\"accounts|cards|loans|gateway\"}",
+            "legendFormat": "{{application}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      }
+    ]
+  }
+}
+

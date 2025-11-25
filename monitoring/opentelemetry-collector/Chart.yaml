@@ -1,0 +1,11 @@
+apiVersion: v2
+name: opentelemetry-collector
+description: Wrapper chart for OpenTelemetry Collector
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: opentelemetry-collector
+    version: 0.90.0
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+

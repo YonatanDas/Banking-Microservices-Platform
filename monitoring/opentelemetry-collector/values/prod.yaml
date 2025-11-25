@@ -1,0 +1,15 @@
+opentelemetry-collector:
+  mode: daemonset
+  
+  config:
+    file: |
+      {{- .Files.Get "config-prod.yaml" | nindent 6 }}
+  
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
