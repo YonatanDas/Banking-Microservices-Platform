@@ -1,7 +1,16 @@
 kube-prometheus-stack:
+  # Disable admission webhooks entirely (both at chart and operator level)
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  
   prometheusOperator:
     admissionWebhooks:
       enabled: false
+      patch:
+        enabled: false
+      failurePolicy: Ignore
   
   prometheus:
     prometheusSpec:

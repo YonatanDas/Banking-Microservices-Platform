@@ -24,4 +24,23 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - SkipCRDs=true  # Skip CRDs in Helm template rendering
+      - ServerSideApply=true  # Use server-side apply to avoid annotation size limits
+  
+  ignoreDifferences:
+    - group: ''
+      kind: Service
+      namespace: kube-system
+    # Ignore CRDs to prevent annotation size issues
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /metadata/annotations
+    # Specifically ignore Prometheus Operator CRDs
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: prometheuses.monitoring.coreos.com
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: prometheusagents.monitoring.coreos.com
 

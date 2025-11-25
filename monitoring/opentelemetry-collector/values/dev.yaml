@@ -35,7 +35,7 @@ opentelemetry-collector:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch, resource]
-          exporters: [prometheusremotewrite]
+          exporters: [loki]  # Export traces to Loki (or use debug exporter for testing)
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
