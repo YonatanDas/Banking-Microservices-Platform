@@ -1,4 +1,8 @@
 kube-prometheus-stack:
+  prometheusOperator:
+    admissionWebhooks:
+      enabled: false
+  
   prometheus:
     prometheusSpec:
       retention: 30d
@@ -30,7 +34,4 @@ kube-prometheus-stack:
           - name: Loki
             type: loki
             url: http://loki-gateway:80
-          - name: Tempo
-            type: tempo
-            url: http://tempo:3200
 

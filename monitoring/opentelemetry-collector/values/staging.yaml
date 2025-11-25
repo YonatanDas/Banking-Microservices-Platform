@@ -1,6 +1,10 @@
 opentelemetry-collector:
   mode: daemonset
   
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: "0.95.0"  # or latest stable version
+  
   config:
     file: |
       {{- .Files.Get "config-staging.yaml" | nindent 6 }}

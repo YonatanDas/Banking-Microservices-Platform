@@ -1,6 +1,9 @@
 loki:
   auth_enabled: false
   
+  # Use test schema for quick testing in dev
+  useTestSchema: true
+  
   storage:
     type: s3
     bucketNames:
