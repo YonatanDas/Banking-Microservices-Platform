@@ -33,6 +33,7 @@ accounts:
     enabled: true
     otel:
       enabled: true
+      agentVersion: "1.32.0"
 
 cards:
   serviceAccount:
@@ -48,6 +49,7 @@ cards:
     enabled: true
     otel:
       enabled: true
+      agentVersion: "1.32.0"
 
 loans:
   serviceAccount:
@@ -63,6 +65,7 @@ loans:
     enabled: true
     otel:
       enabled: true
+      agentVersion: "1.32.0"
 
 gateway:
   serviceAccount:
@@ -79,3 +82,4 @@ gateway:
     enabled: true
     otel:
       enabled: true
+      agentVersion: "1.32.0"
