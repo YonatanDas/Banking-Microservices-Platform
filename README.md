@@ -1,6 +1,6 @@
 # Multi-Environment Banking Platform
 
-[![Microservices CI](https://github.com/yonatandas/Multi-Environment-Microservices/actions/workflows/Microservice-Ci.yaml/badge.svg?branch=main)](https://github.com/yonatandas/Multi-Environment-Microservices/actions/workflows/Microservice-Ci.yaml)
+[![Microservices CI](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml/badge.svg?branch=main)](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml)
 ![Terraform](https://img.shields.io/badge/IaC-Terraform-844FBA?logo=terraform)
 ![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5?logo=kubernetes)
 ![AWS](https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazonaws)
@@ -160,7 +160,7 @@ This simulates how a real company would **modernize a legacy service into a secu
 ## 5. Repository & Directory Structure
 
 ```text
-Multi-Environment-Microservices/
+Banking-Microservices-Platform/
 ├─ accounts | cards | loans | gatewayserver      # Spring Boot services (8080/9000/8090/8072)
 ├─ helm/
 │  ├─ bankingapp-common/                         # Shared Helm templates (Deployment, SA, HPA, NetworkPolicy)

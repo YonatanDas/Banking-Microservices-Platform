@@ -9,7 +9,7 @@ services:
     build:
       context: ./accounts
       dockerfile: Dockerfile
-    image: yonatandas/accounts:v1
+    image: YonatanDas/accounts:v1
     container_name: accounts
     environment:
       - SPRING_PROFILES_ACTIVE=dev
@@ -28,7 +28,7 @@ services:
     build:
       context: ./cards
       dockerfile: Dockerfile
-    image: yonatandas/cards:v1
+    image: YonatanDas/cards:v1
     container_name: cards
     environment:
       - SPRING_PROFILES_ACTIVE=dev
@@ -47,7 +47,7 @@ services:
     build:
       context: ./loans
       dockerfile: Dockerfile
-    image: yonatandas/loans:v1
+    image: YonatanDas/loans:v1
     container_name: loans
     environment:
       - SPRING_PROFILES_ACTIVE=dev
@@ -66,7 +66,7 @@ services:
     build:
       context: ./gatewayserver
       dockerfile: Dockerfile
-    image: yonatandas/gateway:v1
+    image: YonatanDas/gateway:v1
     container_name: gateway
     depends_on:
       accounts:

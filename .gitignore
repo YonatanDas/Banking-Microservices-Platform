@@ -27,3 +27,6 @@ Thumbs.db
 #helm
 charts/
 Chart.lock
+
+#cleanup
+cleanup.txt
