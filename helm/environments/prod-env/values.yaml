@@ -30,6 +30,7 @@ accounts:
   secretName: prod-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -44,6 +45,7 @@ cards:
   secretName: prod-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -58,6 +60,7 @@ loans:
   secretName: prod-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -73,5 +76,6 @@ gateway:
     type: LoadBalancer
   
   monitoring:
+    enabled: true
     otel:
       enabled: true

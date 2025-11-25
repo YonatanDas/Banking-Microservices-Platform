@@ -30,6 +30,7 @@ accounts:
   secretName: stag-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -44,6 +45,7 @@ cards:
   secretName: stag-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -58,6 +60,7 @@ loans:
   secretName: stag-db-credentials
   
   monitoring:
+    enabled: true
     otel:
       enabled: true
 
@@ -72,6 +75,7 @@ gateway:
   service:
     type: LoadBalancer
   
-  monitoring:
+  monitoring: 
+    enabled: true
     otel:
       enabled: true

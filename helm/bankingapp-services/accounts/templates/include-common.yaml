@@ -24,3 +24,7 @@
 
 {{ include "common.denyAllEgress" . }}
 
+---
+
+{{- include "common.servicemonitor" . }}
+
