@@ -7,7 +7,7 @@ spec:
   project: banking-prod-project
   
   source:
-    repoURL: https://github.com/yonatandas/Multi-Environment-Microservices.git
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
     targetRevision: main
     path: monitoring/promtail
     helm:
