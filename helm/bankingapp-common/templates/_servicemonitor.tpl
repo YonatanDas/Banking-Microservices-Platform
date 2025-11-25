@@ -6,7 +6,7 @@ metadata:
   name: {{ .Values.appLabel }}-servicemonitor
   labels:
     app: {{ .Values.appLabel }}
-    release: kube-prometheus-stack
+    release: prometheus-operator-dev
 spec:
   selector:
     matchLabels:
