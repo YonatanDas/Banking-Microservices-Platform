@@ -2,22 +2,22 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       retention: 15d
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: gp3
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 50Gi
+      #storageSpec:
+        #volumeClaimTemplate:
+        #  spec:
+           # storageClassName: gp3
+           # accessModes: ["ReadWriteOnce"]
+           # resources:
+           #   requests:
+             #   storage: 50Gi
 
   grafana:
     adminPassword: external-secrets
     service:
       type: ClusterIP  # Internal only - access via port-forward
     persistence:
-      enabled: true
-      size: 10Gi
+      enabled: false
+      #size: 10Gi
     datasources:
       datasources.yaml:
         apiVersion: 1

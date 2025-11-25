@@ -21,4 +21,5 @@ loki:
   persistence:
     enabled: true
     size: 100Gi
+    storageClassName: gp3
 

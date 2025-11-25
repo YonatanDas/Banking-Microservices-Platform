@@ -19,6 +19,6 @@ loki:
       eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-loki-s3-access-role
 
   persistence:
-    enabled: true
-    size: 20Gi
+    enabled: false
+    #size: 20Gi
 

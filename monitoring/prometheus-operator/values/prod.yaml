@@ -18,6 +18,7 @@ kube-prometheus-stack:
     persistence:
       enabled: true
       size: 50Gi
+      storageClassName: gp3
     datasources:
       datasources.yaml:
         apiVersion: 1
