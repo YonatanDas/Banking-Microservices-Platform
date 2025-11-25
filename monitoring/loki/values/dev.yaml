@@ -1,8 +1,16 @@
 loki:
   auth_enabled: false
   
-  # Explicitly set test schema for dev environment
-  useTestSchema: true
+  # Provide explicit minimal schema config for dev testing
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
   
   storage:
     type: s3

@@ -13,9 +13,7 @@ spec:
     helm:
       valueFiles:
         - values/dev.yaml
-      values: |
-        loki:
-          useTestSchema: true
+      # Remove parameters - using explicit schemaConfig in values file instead
   
   destination:
     server: https://kubernetes.default.svc
