@@ -15,7 +15,7 @@ resource "aws_iam_role" "github_actions_terraform" {
       Condition = {
         StringLike = {
           # Allow ONLY your repo Terraform workflows to assume the role
-          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Multi-Environment-Microservices:ref:refs/heads/*"
+          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Banking-Microservices-Platform:ref:refs/heads/*"
         }
       }
     }]

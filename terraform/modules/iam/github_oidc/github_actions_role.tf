@@ -11,7 +11,7 @@ resource "aws_iam_role" "github_actions" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Multi-Environment-Microservices:*"
+          "token.actions.githubusercontent.com:sub" : "repo:YonatanDas/Banking-Microservices-Platform:*"
         }
       }
     }]
