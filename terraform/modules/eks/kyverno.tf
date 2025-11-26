@@ -64,10 +64,10 @@ resource "helm_release" "kyverno" {
     name  = "resources.requests.memory"
     value = "256Mi"
   }
-  
+
   set {
     name  = "cleanupController.enabled"
-    value = "true"  
+    value = "true"
   }
 
   set {
@@ -88,7 +88,7 @@ resource "helm_release" "kyverno" {
 
   set {
     name  = "admissionController.failurePolicy"
-    value = "Ignore"  # This allows deployments even if Kyverno is slow
+    value = "Ignore" # This allows deployments even if Kyverno is slow
   }
 
   depends_on = [

@@ -5,5 +5,3 @@
 # S3 bucket for Loki storage is created in s3-loki.tf
 # IAM role for Loki is created in iam-loki.tf
 
-# This file can include any additional monitoring infrastructure
-

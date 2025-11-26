@@ -1,0 +1,73 @@
+# Terraform variables for the Production environment
+# Copy this file to prod.tfvars and update with your actual values
+# WARNING: Production environment - review all values carefully!
+############################################
+
+# REQUIRED: Environment identifier
+environment = "prod"
+
+# REQUIRED: AWS Account ID (12 digits)
+aws_account_id = "YOUR_AWS_ACCOUNT_ID_HERE"
+
+# OPTIONAL: AWS region (default: us-east-1)
+# aws_region = "us-east-1"
+
+# EKS Cluster Name
+############################################
+cluster_name = "bankingapp-prod-eks"
+
+# VPC Configuration
+##############################################
+# REQUIRED: VPC CIDR block (must be valid CIDR format, e.g., 10.0.0.0/16)
+# NOTE: Ensure this doesn't conflict with other VPCs in your account
+vpc_cidr = "10.0.0.0/16"
+
+# OPTIONAL: Public subnet CIDRs (default: ["10.0.1.0/24", "10.0.2.0/24"])
+# public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+
+# OPTIONAL: Private subnet CIDRs (default: ["10.0.3.0/24", "10.0.4.0/24"])
+# private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
+
+# OPTIONAL: Availability zones (default: ["us-east-1a", "us-east-1b"])
+# RECOMMENDED: Use at least 2 AZs for high availability
+# availability_zones = ["us-east-1a", "us-east-1b"]
+
+# EKS Node Group Configuration
+############################################
+# REQUIRED: EC2 instance type (must be in format 'family.size')
+# RECOMMENDED: Use larger instance types for production (e.g., t3.2xlarge, m5.large)
+node_instance_type = "t3.2xlarge"
+
+# REQUIRED: Desired number of nodes
+# Must be between node_min_size and node_max_size
+# RECOMMENDED: At least 2 nodes for high availability
+node_desired_capacity = 4
+
+# REQUIRED: Minimum number of nodes
+# RECOMMENDED: At least 2 for production
+node_min_size = 2
+
+# REQUIRED: Maximum number of nodes
+node_max_size = 6
+
+# RDS Database Configuration
+############################################
+# REQUIRED: RDS instance class
+# RECOMMENDED: Use larger instance types for production (e.g., db.m5.large, db.r5.xlarge)
+db_instance_class = "db.m5.large"
+
+# OPTIONAL: Database username (default: dbadmin)
+# RECOMMENDED: Use a strong, unique username
+db_username = "bankingdb"
+
+# OPTIONAL: Database name (default: prod_bank)
+# db_name = "prod_bank"
+
+# REQUIRED: Backup retention period in days
+# RECOMMENDED: At least 7 days for production, up to 35 days
+backup_retention_period = 7
+
+# REQUIRED: Enable deletion protection
+# RECOMMENDED: true for production to prevent accidental deletion
+deletion_protection = true
+

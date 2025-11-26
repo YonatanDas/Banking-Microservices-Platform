@@ -14,7 +14,13 @@ variable "name_prefix" {
 }
 
 variable "vpc_cidr" {
-  default = "10.0.0.0/16"
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+  validation {
+    condition     = can(cidrhost(var.vpc_cidr, 0))
+    error_message = "VPC CIDR must be a valid CIDR block (e.g., 10.0.0.0/16)."
+  }
 }
 
 variable "public_subnet_cidrs" {
@@ -39,12 +45,20 @@ variable "node_instance_type" {
   description = "EC2 instance type for worker nodes"
   type        = string
   default     = "t3.medium"
+  validation {
+    condition     = can(regex("^[a-z0-9]+\\.[a-z0-9]+$", var.node_instance_type))
+    error_message = "Instance type must be in format 'family.size' (e.g., t3.medium, m5.large)."
+  }
 }
 
 variable "node_desired_capacity" {
   description = "Desired number of nodes"
   type        = number
   default     = 2
+  validation {
+    condition     = var.node_desired_capacity >= var.node_min_size && var.node_desired_capacity <= var.node_max_size
+    error_message = "Desired capacity must be between min_size and max_size."
+  }
 }
 
 variable "node_min_size" {
@@ -63,6 +77,10 @@ variable "db_instance_class" {}
 variable "aws_account_id" {
   description = "The AWS Account ID where resources will be created"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "AWS Account ID must be exactly 12 digits."
+  }
 }
 
 variable "db_username" {
@@ -84,6 +102,12 @@ variable "backup_retention_period" {
 variable "deletion_protection" {
   description = "Enable deletion protection for the RDS instance"
   type        = bool
+}
+
+variable "artifacts_s3_bucket" {
+  description = "S3 bucket name for CI/CD artifacts storage"
+  type        = string
+  default     = "my-ci-artifacts55"
 }
 
 
