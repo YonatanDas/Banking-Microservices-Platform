@@ -1,0 +1,29 @@
+tempo:
+  # Storage configuration - use local storage for dev
+  storage:
+    trace:
+      backend: local
+  
+  # OTLP receiver configuration
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+  
+  # Resource limits for dev environment
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Disable persistence in dev (ephemeral storage)
+  persistence:
+    enabled: false
+

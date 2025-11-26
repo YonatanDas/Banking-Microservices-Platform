@@ -8,9 +8,13 @@ opentelemetry-collector:
   config: 
     exporters:
       prometheusremotewrite:
-        endpoint: http://kube-prometheus-stack-prometheus:9090/api/v1/write
+        endpoint: http://prometheus-operator-dev-ku-prometheus:9090/api/v1/write
       loki:
         endpoint: http://loki-gateway:80/loki/api/v1/push
+      otlp/tempo:
+        endpoint: tempo-dev:4317
+        tls:
+          insecure: true
       debug:
         verbosity: detailed
     processors:
@@ -34,11 +38,11 @@ opentelemetry-collector:
             endpoint: 0.0.0.0:4318
     service:
       pipelines:
-        # Note: Loki doesn't support traces. Use debug exporter for traces in dev.
+        # Export traces to Tempo for distributed tracing
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch, resource]
-          exporters: [debug]
+          exporters: [otlp/tempo]
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]

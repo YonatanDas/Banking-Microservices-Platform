@@ -45,5 +45,19 @@ kube-prometheus-stack:
           - name: Loki
             type: loki
             url: http://loki-gateway:80
-          # Remove Tempo - not deployed yet
+          - name: Tempo
+            type: tempo
+            url: http://tempo-dev:3100
+            access: proxy
+            jsonData:
+              httpMethod: GET
+              tracesToLogs:
+                datasourceUid: loki
+                tags: ['job', 'instance', 'pod', 'namespace']
+                mappedTags: [{ key: 'service.name', value: 'service' }]
+                mapTagNamesEnabled: false
+                spanStartTimeShift: '1h'
+                spanEndTimeShift: '1h'
+                filterByTraceID: false
+                filterBySpanID: false
 
