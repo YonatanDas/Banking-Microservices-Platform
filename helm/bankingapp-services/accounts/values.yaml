@@ -5,7 +5,7 @@ serviceName: accounts
 appLabel: accounts
 appName: accounts
 
-# Service defaults — can be overridden in environments
+# Service defaults — can be overridden in environments like dev, stag, prod
 replicaCount: 2
 
 image:

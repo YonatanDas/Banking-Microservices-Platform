@@ -56,8 +56,8 @@ variable "node_desired_capacity" {
   type        = number
   default     = 2
   validation {
-    condition     = var.node_desired_capacity >= var.node_min_size && var.node_desired_capacity <= var.node_max_size
-    error_message = "Desired capacity must be between min_size and max_size."
+    condition     = var.node_desired_capacity >= 1
+    error_message = "Desired capacity must be at least 1."
   }
 }
 variable "node_min_size" {

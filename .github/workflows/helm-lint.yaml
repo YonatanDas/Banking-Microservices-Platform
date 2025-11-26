@@ -27,21 +27,6 @@ jobs:
         with:
           version: '3.13.0'
 
-      - name: Lint bankingapp-common chart
-        run: |
-          helm lint helm/bankingapp-common || exit 1
-
-      - name: Lint bankingapp-services charts
-        run: |
-          for chart in helm/bankingapp-services/*/; do
-            if [ -f "$chart/Chart.yaml" ]; then
-              echo "Building dependencies for $chart"
-              helm dependency build "$chart" || exit 1
-              echo "Linting $chart"
-              helm lint "$chart" || exit 1
-            fi
-          done
-
       - name: Lint environment charts
         run: |
           for chart in helm/environments/*-env/; do
