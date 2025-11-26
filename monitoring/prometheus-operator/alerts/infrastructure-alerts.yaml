@@ -1,0 +1,60 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: banking-app-infrastructure-alerts
+  namespace: monitoring
+  labels:
+    app: banking-app
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: infrastructure_alerts
+      interval: 30s
+      rules:
+        # Node High CPU Usage
+        - alert: NodeHighCPUUsage
+          expr: |
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} has high CPU usage"
+            description: "Node {{ $labels.instance }} CPU usage is above 80% for more than 10 minutes."
+
+        # Node High Memory Usage
+        - alert: NodeHighMemoryUsage
+          expr: |
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} has high memory usage"
+            description: "Node {{ $labels.instance }} memory usage is above 85% for more than 10 minutes."
+
+        # Node Disk Space Low
+        - alert: NodeDiskSpaceLow
+          expr: |
+            (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} disk space is low"
+            description: "Node {{ $labels.instance }} has less than 15% disk space available."
+
+        # Argo CD Sync Failure
+        # Note: Requires Argo CD metrics server to be enabled and ServiceMonitor configured
+        - alert: ArgoCDSyncFailure
+          expr: |
+            argocd_app_info{sync_status!="Synced"} == 1
+            or
+            argocd_app_info{health_status!="Healthy"} == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Argo CD application {{ $labels.name }} sync/health issue"
+            description: "Argo CD application {{ $labels.name }} in namespace {{ $labels.namespace }} has sync_status='{{ $labels.sync_status }}' or health_status='{{ $labels.health_status }}' for more than 5 minutes."
+

@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: banking-app-pod-alerts
+  namespace: monitoring
+  labels:
+    app: banking-app
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: pod_alerts
+      interval: 30s
+      rules:
+        # Pod Crash Loop Alert
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes."
+
+        # Pod Not Ready Alert
+        - alert: PodNotReady
+          expr: kube_pod_status_phase{phase!~"Running|Succeeded"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in {{ $labels.phase }} state for more than 10 minutes."
+
+        # High CPU Usage Alert
+        - alert: HighCPUUsage
+          expr: |
+            sum(rate(container_cpu_usage_seconds_total{namespace="default", container!="POD", container!=""}[5m])) by (pod, namespace) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has high CPU usage"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} CPU usage is above 80% for more than 5 minutes."
+
+        # High Memory Usage Alert
+        - alert: HighMemoryUsage
+          expr: |
+            (sum(container_memory_working_set_bytes{namespace="default", container!="POD", container!=""}) by (pod, namespace) / 
+            sum(container_spec_memory_limit_bytes{namespace="default", container!="POD", container!=""} > 0) by (pod, namespace)) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has high memory usage"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} memory usage is above 80% for more than 5 minutes."
+
