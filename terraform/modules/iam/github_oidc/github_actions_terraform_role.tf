@@ -27,7 +27,7 @@ resource "aws_iam_role" "github_actions_terraform" {
 ###############################################
 resource "aws_iam_policy" "github_actions_terraform_policy" {
   name        = "github-actions-terraform-policy"
-  description = "Permissions required for GitHub Actions to run Terraform plan/apply for EKS, VPC, RDS, IAM, and supporting resources."
+  description = "GitHub Actions Terraform permissions for EKS, VPC, RDS, and IAM"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -46,8 +46,8 @@ resource "aws_iam_policy" "github_actions_terraform_policy" {
           "s3:PutObjectAcl"
         ],
         Resource = [
-          "arn:aws:s3:::my-ci-artifacts55",
-          "arn:aws:s3:::my-ci-artifacts55/*"
+          "arn:aws:s3:::${var.artifacts_s3_bucket}",
+          "arn:aws:s3:::${var.artifacts_s3_bucket}/*"
         ]
       },
 

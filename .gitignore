@@ -23,9 +23,7 @@ Thumbs.db
 #terraform
 .terraform/
 *.terraform.lock.hcl
-*.tfvars
-*.tfvars.json
-!*.tfvars.example
+
 
 #helm
 charts/
