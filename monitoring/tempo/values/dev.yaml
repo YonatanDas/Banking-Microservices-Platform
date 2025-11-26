@@ -14,6 +14,10 @@ tempo:
           http:
             endpoint: 0.0.0.0:4318
   
+  # Query frontend for Grafana
+  queryFrontend:
+    enabled: true
+  
   # Resource limits for dev environment
   resources:
     requests:

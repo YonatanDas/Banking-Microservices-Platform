@@ -12,7 +12,7 @@ opentelemetry-collector:
       loki:
         endpoint: http://loki-gateway:80/loki/api/v1/push
       otlp/tempo:
-        endpoint: tempo-dev:4317
+        endpoint: tempo-dev.monitoring.svc.cluster.local:4317
         tls:
           insecure: true
       debug:

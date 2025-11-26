@@ -18,6 +18,9 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       retention: 15d
+      # Watch all namespaces for ServiceMonitors
+      serviceMonitorNamespaceSelector: {}
+      serviceMonitorSelector: {}
       #storageSpec:
         #volumeClaimTemplate:
         #  spec:
