@@ -1,18 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki-stack-dev
+  name: monitoring-resources-stag
   namespace: argocd
 spec:
-  project: banking-dev-project
+  project: banking-stag-project
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
     targetRevision: main
-    path: monitoring/loki
-    helm:
-      valueFiles:
-        - values/dev.yaml
+    path: monitoring/resources
   
   destination:
     server: https://kubernetes.default.svc
@@ -24,4 +21,14 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+  
+  ignoreDifferences:
+    - group: v1
+      kind: ResourceQuota
+      jsonPointers:
+        - /metadata/annotations
+    - group: v1
+      kind: LimitRange
+      jsonPointers:
+        - /metadata/annotations
 

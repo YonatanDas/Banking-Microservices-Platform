@@ -37,21 +37,16 @@ spec:
         maxDuration: 3m
   
   ignoreDifferences:
-  # Ignore HPA replica changes
   - group: apps
     kind: Deployment
     jsonPointers:
       - /spec/replicas
-      - /status  # Ignore status changes
-  
-  # Ignore Secret data (updated by External Secrets Operator)
+      - /status
   - group: ''
     kind: Secret
     jsonPointers:
       - /data
       - /metadata/annotations
-  
-  # Ignore ConfigMap annotations (if needed)
   - group: ''
     kind: ConfigMap
     jsonPointers:
@@ -61,8 +56,6 @@ spec:
       - /data/OTEL_EXPORTER_OTLP_ENDPOINT
       - /data/OTEL_METRICS_EXPORTER
       - /data/OTEL_LOGS_EXPORTER
-  
-  # Ignore Service annotations (ALB controller adds these)
   - group: ''
     kind: Service
     jsonPointers:

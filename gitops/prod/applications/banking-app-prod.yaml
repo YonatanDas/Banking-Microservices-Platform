@@ -36,6 +36,14 @@ spec:
       - PrunePropagationPolicy=foreground
       - PruneLast=true
       - RespectIgnoreDifferences=true
+    syncWindows:
+      # Prevent deployments during business hours (9 AM - 5 PM UTC, Monday-Friday)
+      - kind: deny
+        schedule: '0 9 * * 1-5'  # 9 AM UTC, Mon-Fri
+        duration: 8h
+        applications:
+          - '*'
+        manualSync: true  # Allow manual syncs even during window
     retry:
       limit: 3
       backoff:

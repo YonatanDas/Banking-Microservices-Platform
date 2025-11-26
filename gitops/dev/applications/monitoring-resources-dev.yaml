@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana-dashboards-dev
+  name: monitoring-resources-dev
   namespace: argocd
 spec:
   project: banking-dev-project
@@ -9,14 +9,26 @@ spec:
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
     targetRevision: main
-    path: monitoring/dashboards/dev
+    path: monitoring/resources
   
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
   
   syncPolicy:
-    automated: null
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
+  
+  ignoreDifferences:
+    - group: v1
+      kind: ResourceQuota
+      jsonPointers:
+        - /metadata/annotations
+    - group: v1
+      kind: LimitRange
+      jsonPointers:
+        - /metadata/annotations
 
