@@ -8,9 +8,8 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/description: >-
-      Prevents use of mutable tags like 'latest', 'dev', 'main', or 'master'.
-      Allows semantic versioning (v*.*.*) or numeric build numbers (1, 2, 3...)
-      to ensure reproducible deployments and prevent accidental rollbacks.
+      Prevents mutable tags (latest, dev, main, master). Allows semantic
+      versions (v*.*.*) or numeric build numbers.
 spec:
   validationFailureAction: Enforce
   background: true

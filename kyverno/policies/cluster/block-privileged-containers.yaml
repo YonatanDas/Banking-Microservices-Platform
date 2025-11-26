@@ -8,9 +8,8 @@ metadata:
     policies.kyverno.io/severity: high
     policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/description: >-
-      Prevents containers from running with privileged mode or dangerous
-      capabilities. Privileged containers have host-level access and can
-      compromise cluster security.
+      Blocks privileged containers and dangerous capabilities (SYS_ADMIN,
+      NET_ADMIN, SYS_RAWIO, SYS_MODULE, SYS_TIME).
 spec:
   validationFailureAction: Enforce
   background: true

@@ -8,11 +8,8 @@ metadata:
     policies.kyverno.io/severity: high
     policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/description: >-
-      Ensures all container images are signed with Cosign using GitHub Actions
-      keyless signing before deployment. This prevents deployment of unsigned
-      or tampered images, maintaining supply chain security.
-      Images must be signed via GitHub Actions workflow with OIDC issuer
-      'https://token.actions.githubusercontent.com'.
+      Requires container images to be signed with Cosign via GitHub Actions
+      keyless signing. Validates OIDC issuer and certificate identity.
 spec:
   validationFailureAction: Enforce
   background: true
@@ -29,14 +26,13 @@ spec:
                 - Job
                 - CronJob
       verifyImages:
+        # NOTE: Update account ID (063630846340) per environment if using different AWS accounts
         - imageReferences:
             - "063630846340.dkr.ecr.us-east-1.amazonaws.com/*"
           attestors:
             - count: 1
               entries:
                 - keyless:
-                    # Match GitHub Actions workflow from this repository
-                    # Subject format: https://github.com/<org>/<repo>/.github/workflows/<workflow>@refs/heads/<branch>
                     subject: "https://github.com/YonatanDas/Banking-Microservices-Platform/.github/workflows/Microservice-Ci.yaml@refs/heads/main"
                     issuer: "https://token.actions.githubusercontent.com"
                     rekor:

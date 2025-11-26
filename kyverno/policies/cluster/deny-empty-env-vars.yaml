@@ -8,9 +8,8 @@ metadata:
     policies.kyverno.io/severity: low
     policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/description: >-
-      Prevents containers from having empty environment variable values.
-      Empty env vars can cause application misconfiguration and runtime errors.
-      Note: envFrom (ConfigMaps/Secrets) is allowed as values are resolved at runtime.
+      Blocks empty environment variable values. envFrom (ConfigMaps/Secrets)
+      is allowed.
 spec:
   validationFailureAction: Enforce
   background: true

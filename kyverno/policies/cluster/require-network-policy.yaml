@@ -8,10 +8,8 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
-      Ensures all Pods have the required labels for NetworkPolicy matching
-      and validates that a NetworkPolicy exists. NetworkPolicies must follow
-      the pattern '<service-name>-network-policy' with podSelector matching
-      'app: <service-name>' label. This enforces zero-trust networking.
+      Requires Pods to have 'app' label and validates NetworkPolicy exists
+      with pattern '<app-label>-network-policy'.
 spec:
   validationFailureAction: Enforce
   background: true
@@ -54,8 +52,6 @@ spec:
         cel:
           expressions:
             - expression: |
-                // Validate Pod has required structure for NetworkPolicy matching
-                // NetworkPolicy existence is validated via lookup below
                 has(object.metadata.labels) && 
                 'app' in object.metadata.labels && 
                 object.metadata.labels['app'] != '' &&

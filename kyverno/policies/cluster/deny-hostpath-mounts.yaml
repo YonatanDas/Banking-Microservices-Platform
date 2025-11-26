@@ -8,9 +8,8 @@ metadata:
     policies.kyverno.io/severity: high
     policies.kyverno.io/subject: Pod,Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/description: >-
-      Prevents Pods from mounting host filesystem paths. HostPath volumes
-      give containers access to the host filesystem, creating security risks.
-      Use PersistentVolumeClaims, ConfigMaps, or Secrets instead.
+      Blocks HostPath volume mounts. Use PersistentVolumeClaims, ConfigMaps,
+      or Secrets instead.
 spec:
   validationFailureAction: Enforce
   background: true

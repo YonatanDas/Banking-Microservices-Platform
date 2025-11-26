@@ -2,7 +2,6 @@
 set -euo pipefail
 
 # Kyverno Policy Test Script
-# This script tests Kyverno policies against sample resources
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 POLICIES_DIR="${SCRIPT_DIR}/../policies/cluster"

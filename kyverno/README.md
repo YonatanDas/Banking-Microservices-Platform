@@ -16,7 +16,7 @@ kyverno/
 ├── tests/
 │   ├── test-resources/   # Sample resources for testing
 │   └── test-policies.sh  # Test script for policy validation
-└── README.md             # This file
+└── README.md
 ```
 
 ## Policies
