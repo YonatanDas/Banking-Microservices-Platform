@@ -53,13 +53,13 @@ jobs:
         with:
           filters: |
             terraform:
-              - 'terraform/**'
+              - '05-terraform/**'
             dev:
-              - 'terraform/environments/dev/**'
+              - '05-terraform/environments/dev/**'
             stag:
-              - 'terraform/environments/stag/**'
+              - '05-terraform/environments/stag/**'
             prod:
-              - 'terraform/environments/prod/**'
+              - '05-terraform/environments/prod/**'
 
   terraform-plan-dev:
     name: Plan Development
@@ -86,7 +86,7 @@ jobs:
         uses: ./.github/actions/terraform-setup
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-          working_directory: terraform/environments/dev
+          working_directory: 05-terraform/environments/dev
 
       - name: Generate Terraform plan
         continue-on-error: true
@@ -97,9 +97,9 @@ jobs:
         with:
           name: tfplan-dev
           path: |
-            terraform/environments/dev/tfplan-dev.txt
-            terraform/environments/dev/tfplan-dev.bin
-            terraform/environments/dev/tfplan-dev.json
+            05-terraform/environments/dev/tfplan-dev.txt
+            05-terraform/environments/dev/tfplan-dev.bin
+            05-terraform/environments/dev/tfplan-dev.json
           retention-days: 7
 
 
@@ -128,7 +128,7 @@ jobs:
         uses: ./.github/actions/terraform-setup
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-          working_directory: terraform/environments/stag
+          working_directory: 05-terraform/environments/stag
 
       - name: Generate Terraform plan
         continue-on-error: true
@@ -139,9 +139,9 @@ jobs:
         with:
           name: tfplan-stag
           path: |
-            terraform/environments/stag/tfplan-stag.txt
-            terraform/environments/stag/tfplan-stag.bin
-            terraform/environments/stag/tfplan-stag.json
+            05-terraform/environments/stag/tfplan-stag.txt
+            05-terraform/environments/stag/tfplan-stag.bin
+            05-terraform/environments/stag/tfplan-stag.json
           retention-days: 7
 
 
@@ -170,7 +170,7 @@ jobs:
         uses: ./.github/actions/terraform-setup
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-          working_directory: terraform/environments/prod
+          working_directory: 05-terraform/environments/prod
 
       - name: Generate Terraform plan
         continue-on-error: true
@@ -181,9 +181,9 @@ jobs:
         with:
           name: tfplan-prod
           path: |
-            terraform/environments/prod/tfplan-prod.txt
-            terraform/environments/prod/tfplan-prod.bin
-            terraform/environments/prod/tfplan-prod.json
+            05-terraform/environments/prod/tfplan-prod.txt
+            05-terraform/environments/prod/tfplan-prod.bin
+            05-terraform/environments/prod/tfplan-prod.json
           retention-days: 7
 
   Collect-Artifacts:

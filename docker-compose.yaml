@@ -7,7 +7,7 @@ networks:
 services:
   accounts:
     build:
-      context: ./accounts
+      context: ./01-accounts
       dockerfile: Dockerfile
     image: YonatanDas/accounts:v1
     container_name: accounts
@@ -26,7 +26,7 @@ services:
 
   cards:
     build:
-      context: ./cards
+      context: ./02-cards
       dockerfile: Dockerfile
     image: YonatanDas/cards:v1
     container_name: cards
@@ -45,7 +45,7 @@ services:
 
   loans:
     build:
-      context: ./loans
+      context: ./03-loans
       dockerfile: Dockerfile
     image: YonatanDas/loans:v1
     container_name: loans
@@ -64,7 +64,7 @@ services:
 
   gateway:
     build:
-      context: ./gatewayserver
+      context: ./04-gatewayserver
       dockerfile: Dockerfile
     image: YonatanDas/gateway:v1
     container_name: gateway

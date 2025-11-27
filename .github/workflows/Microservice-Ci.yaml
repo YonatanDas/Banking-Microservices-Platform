@@ -8,16 +8,16 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "accounts/**"
-      - "cards/**"
-      - "loans/**"
-      - "gatewayserver/**"
+      - "01-accounts/**"
+      - "02-cards/**"
+      - "03-loans/**"
+      - "04-gatewayserver/**"
   pull_request:
     paths:
-      - "accounts/**"
-      - "cards/**"
-      - "loans/**"
-      - "gatewayserver/**"
+      - "01-accounts/**"
+      - "02-cards/**"
+      - "03-loans/**"
+      - "04-gatewayserver/**"
 
 permissions:
   contents: write
@@ -44,10 +44,10 @@ jobs:
         id: detect
         with:
           filters: |
-            accounts: 'accounts/**'
-            cards: 'cards/**'
-            loans: 'loans/**'
-            gatewayserver: 'gatewayserver/**'
+            accounts: '01-accounts/**'
+            cards: '02-cards/**'
+            loans: '03-loans/**'
+            gatewayserver: '04-gatewayserver/**'
         
   # -------------------------------
   # LINT & UNIT TESTS
@@ -60,10 +60,19 @@ jobs:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
     env:
           SERVICE: ${{ matrix.SERVICE }}
-          SERVICE_DIR: ./${{ matrix.SERVICE }}    
 
     steps:
       - uses: actions/checkout@v3
+      - name: Resolve service directory
+        run: |
+          case "${{ matrix.SERVICE }}" in
+            accounts) dir="01-accounts" ;;
+            cards) dir="02-cards" ;;
+            loans) dir="03-loans" ;;
+            gatewayserver) dir="04-gatewayserver" ;;
+            *) echo "Unknown service ${{ matrix.SERVICE }}" >&2; exit 1 ;;
+          esac
+          echo "SERVICE_DIR=./$dir" >> "$GITHUB_ENV"
   
       - name: Restore Docker cache
         uses: ./.github/actions/caching
@@ -103,10 +112,19 @@ jobs:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
     env:
       SERVICE: ${{ matrix.SERVICE }}
-      SERVICE_DIR: ./${{ matrix.SERVICE }}
 
     steps:
       - uses: actions/checkout@v3
+      - name: Resolve service directory
+        run: |
+          case "${{ matrix.SERVICE }}" in
+            accounts) dir="01-accounts" ;;
+            cards) dir="02-cards" ;;
+            loans) dir="03-loans" ;;
+            gatewayserver) dir="04-gatewayserver" ;;
+            *) echo "Unknown service ${{ matrix.SERVICE }}" >&2; exit 1 ;;
+          esac
+          echo "SERVICE_DIR=./$dir" >> "$GITHUB_ENV"
 
       - name: Make scripts executable
         run: chmod +x .github/scripts/*.sh
@@ -142,7 +160,6 @@ jobs:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
     env:
       SERVICE: ${{ matrix.SERVICE }}
-      SERVICE_DIR: ./${{ matrix.SERVICE }}
       AWS_REGION: us-east-1
       REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com 
 
@@ -150,6 +167,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Resolve service directory
+        run: |
+          case "${{ matrix.SERVICE }}" in
+            accounts) dir="01-accounts" ;;
+            cards) dir="02-cards" ;;
+            loans) dir="03-loans" ;;
+            gatewayserver) dir="04-gatewayserver" ;;
+            *) echo "Unknown service ${{ matrix.SERVICE }}" >&2; exit 1 ;;
+          esac
+          echo "SERVICE_DIR=./$dir" >> "$GITHUB_ENV"
       - name: Setup AWS + ECR
         uses: ./.github/actions/env-setup
         with:
@@ -210,9 +237,18 @@ jobs:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
     env:
       SERVICE: ${{ matrix.SERVICE }}
-      SERVICE_DIR: ./${{ matrix.SERVICE }}
     steps:
     - uses: actions/checkout@v3
+    - name: Resolve service directory
+      run: |
+        case "${{ matrix.SERVICE }}" in
+          accounts) dir="01-accounts" ;;
+          cards) dir="02-cards" ;;
+          loans) dir="03-loans" ;;
+          gatewayserver) dir="04-gatewayserver" ;;
+          *) echo "Unknown service ${{ matrix.SERVICE }}" >&2; exit 1 ;;
+        esac
+        echo "SERVICE_DIR=./$dir" >> "$GITHUB_ENV"
     - name: Setup AWS + ECR
       uses: ./.github/actions/env-setup
       with:
@@ -248,9 +284,18 @@ jobs:
         service: ${{ fromJson(needs.services-changed.outputs.services) }}
     env:
       SERVICE: ${{ matrix.SERVICE }}
-      SERVICE_DIR: ./${{ matrix.SERVICE }}    
     steps:
     - uses: actions/checkout@v3
+    - name: Resolve service directory
+      run: |
+        case "${{ matrix.SERVICE }}" in
+          accounts) dir="01-accounts" ;;
+          cards) dir="02-cards" ;;
+          loans) dir="03-loans" ;;
+          gatewayserver) dir="04-gatewayserver" ;;
+          *) echo "Unknown service ${{ matrix.SERVICE }}" >&2; exit 1 ;;
+        esac
+        echo "SERVICE_DIR=./$dir" >> "$GITHUB_ENV"
     - name: Setup AWS + ECR
       uses: ./.github/actions/env-setup
       with:

@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: banking-app-prod
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: |
+      accounts=063630846340.dkr.ecr.us-east-1.amazonaws.com/accounts,
+      cards=063630846340.dkr.ecr.us-east-1.amazonaws.com/cards,
+      loans=063630846340.dkr.ecr.us-east-1.amazonaws.com/loans,
+      gatewayserver=063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/accounts.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/cards.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/loans.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/gatewayserver.update-strategy: semver:^1.0.0
+spec:
+  project: banking-prod-project
+  
+  source:
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
+    targetRevision: main
+    path: 06-helm/environments/prod-env
+    helm:
+      valueFiles:
+        - values.yaml
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
+    syncWindows:
+      # Prevent deployments during business hours (9 AM - 5 PM UTC, Monday-Friday)
+      - kind: deny
+        schedule: '0 9 * * 1-5'  # 9 AM UTC, Mon-Fri
+        duration: 8h
+        applications:
+          - '*'
+        manualSync: true  # Allow manual syncs even during window
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+

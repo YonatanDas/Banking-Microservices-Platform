@@ -4,11 +4,11 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - "helm/**"
+      - "06-helm/**"
   pull_request:
     branches: [ "main" ]
     paths:
-      - "helm/**"
+      - "06-helm/**"
   workflow_dispatch:
 
 permissions:
@@ -29,7 +29,7 @@ jobs:
 
       - name: Lint environment charts
         run: |
-          for chart in helm/environments/*-env/; do
+          for chart in 06-helm/environments/*-env/; do
             if [ -f "$chart/Chart.yaml" ]; then
               echo "Building dependencies for $chart"
               helm dependency build "$chart" || exit 1
@@ -40,7 +40,7 @@ jobs:
 
       - name: Lint monitoring charts
         run: |
-          for chart in monitoring/*/; do
+          for chart in 08-monitoring/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
               echo "Building dependencies for $chart"
               helm dependency build "$chart" || exit 1

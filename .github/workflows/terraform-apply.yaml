@@ -75,26 +75,26 @@ jobs:
         continue-on-error: true
         with:
           name: tfplan-dev
-          path: terraform/environments/dev/
+          path: 05-terraform/environments/dev/
 
       - name: Initialize Terraform
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: terraform init
 
       - name: Validate Terraform
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: terraform validate
 
       - name: Run plan verification
         id: plan-verify
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: |
           terraform plan -var-file=dev.tfvars -no-color | tee plan-verification.txt
         continue-on-error: true
 
       - name: Apply Terraform
         id: apply
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: |
           if [ -f "tfplan-dev.bin" ]; then
             terraform apply tfplan-dev.bin -no-color | tee apply-output.txt
@@ -105,13 +105,13 @@ jobs:
         continue-on-error: true
 
       - name: Get Terraform outputs
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: terraform output -json > terraform-output-dev.json
         continue-on-error: true
 
       - name: Generate apply summary
         id: summary
-        working-directory: terraform/environments/dev
+        working-directory: 05-terraform/environments/dev
         run: |
           echo "## Terraform Apply Results for dev" > apply-summary-dev.txt
           echo "" >> apply-summary-dev.txt
@@ -135,8 +135,8 @@ jobs:
         with:
           name: apply-logs-dev
           path: |
-            terraform/environments/dev/apply-output.txt
-            terraform/environments/dev/terraform-output-dev.json
+            05-terraform/environments/dev/apply-output.txt
+            05-terraform/environments/dev/terraform-output-dev.json
           retention-days: 30
 
       - name: Post apply status
@@ -181,11 +181,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan-stag
-          path: terraform/environments/stag/
+          path: 05-terraform/environments/stag/
         continue-on-error: true
 
       - name: Check plan file exists
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: |
           if [ ! -f "tfplan-stag.bin" ]; then
             echo "❌ Plan file not found. Please run the plan workflow first."
@@ -194,33 +194,33 @@ jobs:
           echo "✅ Plan file found"
 
       - name: Initialize Terraform
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: terraform init
 
       - name: Validate Terraform
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: terraform validate
 
       - name: Show plan output
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: terraform show tfplan-stag
 
       - name: Apply Terraform
         id: apply
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: |
           terraform apply tfplan-stag.bin -no-color | tee apply-output.txt
           echo "status=success" >> $GITHUB_OUTPUT
         continue-on-error: true
 
       - name: Get Terraform outputs
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: terraform output -json > terraform-output-stag.json
         continue-on-error: true
 
       - name: Generate apply summary
         id: summary
-        working-directory: terraform/environments/stag
+        working-directory: 05-terraform/environments/stag
         run: |
           echo "## Terraform Apply Results for stag" > apply-summary-stag.txt
           echo "" >> apply-summary-stag.txt
@@ -244,9 +244,9 @@ jobs:
         with:
           name: apply-logs-stag
           path: |
-            terraform/environments/stag/apply-output.txt
-            terraform/environments/stag/apply-summary-stag.txt
-            terraform/environments/stag/terraform-output-stag.json
+            05-terraform/environments/stag/apply-output.txt
+            05-terraform/environments/stag/apply-summary-stag.txt
+            05-terraform/environments/stag/terraform-output-stag.json
           retention-days: 30
 
       - name: Post apply status
@@ -301,11 +301,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan-prod
-          path: terraform/environments/prod/
+          path: 05-terraform/environments/prod/
         continue-on-error: true
 
       - name: Check plan file exists
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: |
           if [ ! -f "tfplan-prod.bin" ]; then
             echo "❌ Plan file not found. Please run the plan workflow first."
@@ -314,33 +314,33 @@ jobs:
           echo "✅ Plan file found"
 
       - name: Initialize Terraform
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: terraform init
 
       - name: Validate Terraform
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: terraform validate
 
       - name: Show plan output
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: terraform show tfplan-prod
 
       - name: Apply Terraform
         id: apply
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: |
           terraform apply tfplan-prod.bin -no-color | tee apply-output.txt
           echo "status=success" >> $GITHUB_OUTPUT
         continue-on-error: true
 
       - name: Get Terraform outputs
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: terraform output -json > terraform-output-prod.json
         continue-on-error: true
 
       - name: Generate apply summary
         id: summary
-        working-directory: terraform/environments/prod
+        working-directory: 05-terraform/environments/prod
         run: |
           echo "## Terraform Apply Results for prod" > apply-summary-prod.txt
           echo "" >> apply-summary-prod.txt
@@ -364,9 +364,9 @@ jobs:
         with:
           name: apply-logs-prod
           path: |
-            terraform/environments/prod/apply-output.txt
-            terraform/environments/prod/apply-summary-prod.txt
-            terraform/environments/prod/terraform-output-prod.json
+            05-terraform/environments/prod/apply-output.txt
+            05-terraform/environments/prod/apply-summary-prod.txt
+            05-terraform/environments/prod/terraform-output-prod.json
           retention-days: 30
 
       - name: Create deployment tag

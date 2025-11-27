@@ -142,7 +142,7 @@
 | **CI/CD** | Manual builds | Automated with OIDC, scanning, signing |
 | **Scaling** | Manual | HPA, ResourceQuota, PDBs |
 
-**Architecture Diagram**: See [docs/diagrams/after-diagram.png](docs/diagrams/after-diagram.png)
+**Architecture Diagram**: See [11-docs/diagrams/after-diagram.png](11-docs/diagrams/after-diagram.png)
 
 ---
 
@@ -239,7 +239,7 @@
 
 ```
 Multi-Environment-Microservices/
-├── terraform/                    # Infrastructure as Code
+├── 05-terraform/                 # Infrastructure as Code
 │   ├── environments/            # Environment-specific configs
 │   │   ├── dev/                 # Dev environment
 │   │   ├── stag/                # Staging environment
@@ -251,7 +251,7 @@ Multi-Environment-Microservices/
 │       ├── ecr/                 # Container registries
 │       └── iam/                 # IAM roles (IRSA, OIDC, etc.)
 │
-├── helm/                        # Kubernetes application charts
+├── 06-helm/                     # Kubernetes application charts
 │   ├── bankingapp-common/       # Shared templates library
 │   ├── bankingapp-services/     # Service-specific charts
 │   │   ├── accounts/
@@ -263,12 +263,12 @@ Multi-Environment-Microservices/
 │       ├── stag-env/
 │       └── prod-env/
 │
-├── gitops/                      # Argo CD application manifests
+├── 07-gitops/                   # Argo CD application manifests
 │   ├── dev/applications/        # Dev Argo CD apps
 │   ├── stag/applications/       # Staging Argo CD apps
 │   └── prod/applications/       # Production Argo CD apps
 │
-├── monitoring/                  # Observability stack
+├── 08-monitoring/               # Observability stack
 │   ├── prometheus-operator/     # Prometheus & Alertmanager
 │   │   ├── alerts/              # PrometheusRule resources
 │   │   └── values/              # Environment-specific values
@@ -284,18 +284,18 @@ Multi-Environment-Microservices/
 │   ├── terraform-apply.yaml     # Terraform apply
 │   └── helm-lint.yaml           # Helm chart linting
 │
-├── security/                    # Security documentation
-├── docs/                        # Additional documentation
+├── 10-security/                 # Security documentation
+├── 11-docs/                     # Additional documentation
 │   ├── runbooks/                # Operational procedures
 │   └── diagrams/                # Architecture diagrams
 │
-└── accounts/ cards/ loans/ gatewayserver/  # Microservice source code
+└── 01-accounts/ 02-cards/ 03-loans/ 04-gatewayserver/  # Microservice source code
 ```
 
 **Key Entry Points**:
-- Infrastructure: `terraform/environments/{env}/main.tf`
-- Applications: `helm/environments/{env}-env/values.yaml`
-- GitOps: `gitops/{env}/applications/`
+- Infrastructure: `05-terraform/environments/{env}/main.tf`
+- Applications: `06-helm/environments/{env}-env/values.yaml`
+- GitOps: `07-gitops/{env}/applications/`
 
 ---
 
@@ -304,7 +304,7 @@ Multi-Environment-Microservices/
 ### 1. Infrastructure Provisioning
 ```bash
 # Provision infrastructure for an environment
-cd terraform/environments/dev
+cd 05-terraform/environments/dev
 terraform init
 terraform plan -var-file=dev.tfvars
 terraform apply -var-file=dev.tfvars
@@ -321,7 +321,7 @@ terraform apply -var-file=dev.tfvars
 ### 2. GitOps Deployment (Automatic)
 Once infrastructure is provisioned:
 1. Argo CD is installed via Terraform (Helm release)
-2. Argo CD syncs applications from `gitops/` directory
+2. Argo CD syncs applications from `07-gitops/` directory
 3. Applications deploy microservices, monitoring stack, and policies
 4. External Secrets Operator syncs DB credentials from AWS Secrets Manager
 
@@ -393,7 +393,7 @@ Code Push → GitHub Actions → Build & Test → Trivy Scan → Cosign Sign →
 - **JVM Metrics**: Memory, GC, thread pools
 - **HTTP Request Metrics**: Latency, throughput, status codes
 
-**Access**: Grafana available via port-forward (see [monitoring/README.md](monitoring/README.md))
+**Access**: Grafana available via port-forward (see [08-monitoring/README.md](08-monitoring/README.md))
 
 ---
 
@@ -457,19 +457,19 @@ Code Push → GitHub Actions → Build & Test → Trivy Scan → Cosign Sign →
 ## 📚 Documentation
 
 ### Component Documentation
-- **[Terraform](terraform/README.md)**: Infrastructure provisioning, modules, remote state
-- **[Helm](helm/README.md)**: Chart structure, service deployment, environment configs
-- **[GitOps](gitops/README.md)**: Argo CD setup, app-of-apps pattern, sync policies
+- **[Terraform](05-terraform/README.md)**: Infrastructure provisioning, modules, remote state
+- **[Helm](06-helm/README.md)**: Chart structure, service deployment, environment configs
+- **[GitOps](07-gitops/README.md)**: Argo CD setup, app-of-apps pattern, sync policies
 - **[CI/CD](.github/workflows/README.md)**: GitHub Actions workflows, OIDC, security scanning
-- **[Monitoring](monitoring/README.md)**: Prometheus, Grafana, Loki, Tempo setup
-- **[Security](security/README.md)**: ESO, Kyverno, IRSA, network policies, image signing
+- **[Monitoring](08-monitoring/README.md)**: Prometheus, Grafana, Loki, Tempo setup
+- **[Security](10-security/README.md)**: ESO, Kyverno, IRSA, network policies, image signing
 
 ### Operational Runbooks
-- **[Scaling Services](docs/runbooks/scaling-services.md)**: Horizontal and vertical scaling
-- **[Troubleshooting Pod Crashes](docs/runbooks/troubleshooting-pod-crashes.md)**: Debug pod failures
-- **[Argo CD Sync Failures](docs/runbooks/argocd-sync-failures.md)**: Resolve sync issues
-- **[Security Incident Response](docs/runbooks/security-incident-response.md)**: Security procedures
-- **[Database Backup & Restore](docs/runbooks/database-backup-restore.md)**: RDS operations
+- **[Scaling Services](11-docs/runbooks/scaling-services.md)**: Horizontal and vertical scaling
+- **[Troubleshooting Pod Crashes](11-docs/runbooks/troubleshooting-pod-crashes.md)**: Debug pod failures
+- **[Argo CD Sync Failures](11-docs/runbooks/argocd-sync-failures.md)**: Resolve sync issues
+- **[Security Incident Response](11-docs/runbooks/security-incident-response.md)**: Security procedures
+- **[Database Backup & Restore](11-docs/runbooks/database-backup-restore.md)**: RDS operations
 
 ---
 
@@ -495,15 +495,15 @@ cd Multi-Environment-Microservices
 #### 2. Review Configuration
 ```bash
 # Check environment variables needed
-cat terraform/environments/dev/dev.tfvars.example
+cat 05-terraform/environments/dev/dev.tfvars.example
 
 # Review infrastructure modules
-ls terraform/modules/
+ls 05-terraform/modules/
 ```
 
 #### 3. Provision Dev Environment
 ```bash
-cd terraform/environments/dev
+cd 05-terraform/environments/dev
 terraform init
 terraform plan -var-file=dev.tfvars
 # Review output, then:
@@ -552,7 +552,7 @@ kubectl get applications -n argocd
 # Expected: Multiple applications in Synced/Healthy state
 ```
 
-**Troubleshooting**: See [docs/runbooks/](docs/runbooks/) for common issues
+**Troubleshooting**: See [11-docs/runbooks/](11-docs/runbooks/) for common issues
 
 ---
 
@@ -570,11 +570,11 @@ kubectl get applications -n argocd
 terraform validate
 
 # Test Helm charts
-helm lint helm/environments/dev-env
-helm template helm/environments/dev-env --debug
+helm lint 06-helm/environments/dev-env
+helm template 06-helm/environments/dev-env --debug
 
 # Test Kubernetes manifests
-kubectl apply --dry-run=client -f monitoring/resources/
+kubectl apply --dry-run=client -f 08-monitoring/resources/
 ```
 
 ---
@@ -597,8 +597,8 @@ kubectl apply --dry-run=client -f monitoring/resources/
 
 This is a portfolio/demonstration project. For questions or feedback:
 - Review the component-specific READMEs in each directory
-- Check operational runbooks in `docs/runbooks/`
-- Examine architecture diagrams in `docs/diagrams/`
+- Check operational runbooks in `11-docs/runbooks/`
+- Examine architecture diagrams in `11-docs/diagrams/`
 
 ---
 

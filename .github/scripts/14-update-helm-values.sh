@@ -22,7 +22,7 @@ case "${SERVICE}" in
     ;;
 esac
 
-TAGS_FILE="helm/environments/${ENVIRONMENT}-env/image-tags.yaml"
+TAGS_FILE="06-helm/environments/${ENVIRONMENT}-env/image-tags.yaml"
 
 echo "🔄 Updating ${HELM_SERVICE}.image.tag to ${IMAGE_TAG} in ${TAGS_FILE}"
 

@@ -42,7 +42,7 @@ GitHub Actions workflows automate the entire software delivery lifecycle: **buil
 
 ### Microservices CI/CD pipeline (`Microservice-Ci.yaml`)
 
-**Trigger**: Push/PR to `main` branch when `accounts/`, `cards/`, `loans/`, or `gatewayserver/` directories change
+**Trigger**: Push/PR to `main` branch when `01-accounts/`, `02-cards/`, `03-loans/`, or `04-gatewayserver/` directories change
 
 **Pipeline stages**:
 1. **Service detection**: `dorny/paths-filter` identifies changed services
@@ -54,12 +54,19 @@ GitHub Actions workflows automate the entire software delivery lifecycle: **buil
 
 **OIDC authentication**: Uses `github-actions-eks-ecr-role` (created by Terraform `iam/github_oidc` module) for ECR push and S3 upload
 
+<img src="../../11-docs/diagrams/Services-Workflow.png" alt="Services Workflow" width="800" />
+
 ### Terraform workflows
 
 **Three-stage pipeline**:
 1. **`terraform-validate.yaml`**: Runs `terraform fmt`, `validate`, Checkov, and tfsec scans; archives results to S3
 2. **`terraform-plan.yaml`**: Generates Terraform plans (binary, text, JSON) for all environments; stores in S3 for review
 3. **`terraform-apply.yaml`**: Applies Terraform with manual approval gate; requires uploaded plan artifacts for staging/prod
+
+<img src="../../11-docs/diagrams/Terraform-Validate.png" alt="Terraform Vlidate Workflow" width="800" />
+
+<img src="../../11-docs/diagrams/Terraform-Plan-Apply.png" alt="Terraform Plan Apply Workflow" width="800" />
+
 
 **Security scanning**: Checkov and tfsec scan Terraform code for misconfigurations, insecure defaults, and compliance violations
 
@@ -85,7 +92,7 @@ GitHub Actions workflows automate the entire software delivery lifecycle: **buil
 
 ### Trigger microservices CI
 
-Push changes to `accounts/`, `cards/`, `loans/`, or `gatewayserver/` directories:
+Push changes to `01-accounts/`, `02-cards/`, `03-loans/`, or `04-gatewayserver/` directories:
 ```bash
 git commit -m "Update accounts service"
 git push origin main

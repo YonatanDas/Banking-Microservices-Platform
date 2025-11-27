@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ENVIRONMENT="${1:-dev}"
-TF_DIR="terraform/environments/${ENVIRONMENT}"
+TF_DIR="05-terraform/environments/${ENVIRONMENT}"
 
 cd "${TF_DIR}"
 

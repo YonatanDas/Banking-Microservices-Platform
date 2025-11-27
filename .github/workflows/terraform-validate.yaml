@@ -3,11 +3,11 @@ name: Terraform Validate
 on:
   pull_request:
     paths:
-      - 'terraform/**'
+      - '05-terraform/**'
   push:
     branches: [main]
     paths:
-      - 'terraform/**'
+      - '05-terraform/**'
   workflow_dispatch:
 
 concurrency:
@@ -69,7 +69,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Validate Terraform
-        working-directory: terraform/environments/${{ matrix.env }}
+        working-directory: 05-terraform/environments/${{ matrix.env }}
         run: |
           terraform init -backend=false
           terraform validate > validation-results-${{ matrix.env }}.txt 2>&1 || true
