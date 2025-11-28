@@ -1,0 +1,81 @@
+metadata:
+  name: accounts
+  description: Accounts microservice
+
+container:
+  port: 8080
+  imageRepository: accounts
+
+replicas:
+  default: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPU: 70
+  targetMemory: 70
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  host: ""
+  path: /
+  className: ""
+  annotations: {}
+
+networkPolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+  allowToServices:
+    - cards
+    - loans
+  targetPorts:
+    cards: 9000
+    loans: 8090
+  denyAllIngress: true
+  denyAllEgress: true
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+environment:
+  variables: []
+  secrets:
+    - name: dev-db-credentials
+      optional: false
+
+serviceAccount:
+  create: true
+  name: accounts-sa
+  annotations: {}
+
+monitoring:
+  otelEnabled: true
+  serviceMonitorEnabled: true
+
+
