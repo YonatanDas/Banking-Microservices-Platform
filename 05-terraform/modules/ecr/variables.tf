@@ -8,3 +8,9 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "project_name" {
+  description = "Project name for tagging (optional)"
+  type        = string
+  default     = ""
+}

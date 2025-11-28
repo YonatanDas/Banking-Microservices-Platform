@@ -9,8 +9,38 @@ variable "environment" {
 }
 
 variable "name_prefix" {
-  type    = string
-  default = "banking"
+  type        = string
+  description = "Prefix for naming resources (e.g., 'banking' or '' for no prefix)"
+  default     = ""
+}
+
+variable "microservices" {
+  type        = list(string)
+  description = "List of microservice names"
+  default     = []
+}
+
+variable "project_name" {
+  type        = string
+  description = "Project name for tagging resources"
+  default     = ""
+}
+
+variable "db_name_suffix" {
+  type        = string
+  description = "Suffix for database name (e.g., 'bank')"
+  default     = "db"
+}
+
+variable "service_registry" {
+  type = map(object({
+    service_account_name = string
+    port                 = number
+    needs_rds_access     = bool
+    helm_name            = optional(string)
+  }))
+  description = "Service registry mapping service names to configurations"
+  default     = {}
 }
 
 variable "vpc_cidr" {

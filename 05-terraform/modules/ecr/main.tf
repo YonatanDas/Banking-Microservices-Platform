@@ -15,10 +15,12 @@ resource "aws_ecr_repository" "repos" {
     encryption_type = "AES256"
   }
 
-  tags = {
-    Environment = var.environment
-    Project     = "Banking-App"
-  }
+  tags = merge(
+    {
+      Environment = var.environment
+    },
+    var.project_name != "" ? { Project = var.project_name } : {}
+  )
 }
 
 ##########################################

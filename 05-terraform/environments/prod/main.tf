@@ -17,8 +17,9 @@ module "vpc" {
 ############################################
 module "ecr" {
   source        = "../../modules/ecr"
-  service_names = ["accounts", "cards", "loans", "gatewayserver"]
+  service_names = var.microservices
   environment   = var.environment
+  project_name  = var.project_name
 }
 
 ############################################
@@ -26,12 +27,12 @@ module "ecr" {
 ############################################
 module "iam_cluster_role" {
   source      = "../../modules/iam/cluster_role"
-  name_prefix = "banking"
+  name_prefix = var.name_prefix != "" ? var.name_prefix : "platform"
 }
 
 module "iam_node_role" {
   source      = "../../modules/iam/node_role"
-  name_prefix = "banking"
+  name_prefix = var.name_prefix != "" ? var.name_prefix : "platform"
 }
 
 ############################################
@@ -74,7 +75,7 @@ module "rds" {
 
   db_username = var.db_username
   db_password = random_password.db.result
-  db_name     = "${var.environment}_bank"
+  db_name     = "${var.environment}_${var.db_name_suffix}"
 
   db_instance_class = var.db_instance_class
   db_sg_id          = module.vpc.rds_sg_id
@@ -110,16 +111,17 @@ module "secrets" {
 # IAM Role for RDS Access via IRSA
 ############################################
 locals {
-  microservices = {
-    accounts = { sa_name = "accounts-sa" }
-    cards    = { sa_name = "cards-sa" }
-    loans    = { sa_name = "loans-sa" }
+  # Build microservices map from service_registry, filtering only services that need RDS access
+  microservices_with_rds = {
+    for k, v in var.service_registry : k => {
+      sa_name = v.service_account_name
+    } if v.needs_rds_access
   }
 }
 
 module "rds_access_role" {
   source               = "../../modules/iam/rds_access_role"
-  for_each             = local.microservices
+  for_each             = local.microservices_with_rds
   environment          = var.environment
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.oidc_provider_url
@@ -150,10 +152,7 @@ module "argocd_image_updater_role" {
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
   ecr_repository_arns = [
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/accounts",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/cards",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/loans",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/gatewayserver"
+    for svc in var.microservices : "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/${svc}"
   ]
 }
 
@@ -164,10 +163,7 @@ module "github_oidc" {
   source              = "../../modules/iam/github_oidc"
   artifacts_s3_bucket = var.artifacts_s3_bucket
   ecr_repository_arns = [
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/accounts",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/cards",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/loans",
-    "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/gatewayserver"
+    for svc in var.microservices : "arn:aws:ecr:${var.aws_region}:${var.aws_account_id}:repository/${svc}"
   ]
 }
 

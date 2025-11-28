@@ -15,6 +15,11 @@ variable "environment" {
   default = "dev"
 }
 
+variable "prefix" {
+  type    = string
+  default = "dev"
+}
+
 ##########################################
 # Networking Variables
 ##########################################
@@ -73,7 +78,10 @@ variable "node_max_size" {
   default     = 3
 }
 
-variable "region" {}
+variable "region" {
+  type = string
+  default = "us-east-1"
+}
 
 variable "alb_controller_role_arn" {
   description = "IAM role ARN for AWS Load Balancer Controller (for IRSA)"
