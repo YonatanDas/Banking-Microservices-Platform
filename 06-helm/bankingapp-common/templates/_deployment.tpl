@@ -1,4 +1,7 @@
 {{- define "common.deployment" -}}
+{{- $monitoring := .Values.monitoring | default dict }}
+{{- $otel := $monitoring.otel | default dict }}
+{{- $securityContext := .Values.securityContext | default dict }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,14 +23,14 @@ spec:
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       
-      {{- if .Values.monitoring.otel.enabled }}
+      {{- if $otel.enabled | default false }}
       initContainers:
         - name: download-otel-agent
           image: curlimages/curl:8.5.0
           securityContext:
-            runAsNonRoot: {{ .Values.securityContext.runAsNonRoot | default true }}
-            runAsUser: {{ .Values.securityContext.runAsUser | default 1000 }}
-            allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation | default false }}
+            runAsNonRoot: {{ $securityContext.runAsNonRoot | default true }}
+            runAsUser: {{ $securityContext.runAsUser | default 1000 }}
+            allowPrivilegeEscalation: {{ $securityContext.allowPrivilegeEscalation | default false }}
             capabilities:
               drop:
                 - ALL
@@ -35,9 +38,9 @@ spec:
             - sh
             - -c
             - |
-              echo "Downloading OpenTelemetry Java Agent v{{ .Values.monitoring.otel.agentVersion }}..."
+              echo "Downloading OpenTelemetry Java Agent v{{ $otel.agentVersion | default "1.32.0" }}..."
               curl -L -f -o /shared/opentelemetry-javaagent.jar \
-                https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v{{ .Values.monitoring.otel.agentVersion }}/opentelemetry-javaagent.jar
+                https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v{{ $otel.agentVersion | default "1.32.0" }}/opentelemetry-javaagent.jar
               if [ $? -eq 0 ]; then
                 echo "✅ OTEL agent downloaded successfully"
                 ls -lh /shared/opentelemetry-javaagent.jar
@@ -59,19 +62,19 @@ spec:
       
       containers:
         - name: {{ .Values.appLabel }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: IfNotPresent
+          image: "{{- if .Values.image.repository -}}{{ .Values.image.repository }}{{- else if .Values.global.ecrRegistry -}}{{ .Values.global.ecrRegistry }}/{{ .Values.ecrRepositoryName | default .Values.serviceName | default .Values.appLabel }}{{- else -}}{{ .Values.image.repository }}{{- end }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           securityContext:
-            runAsNonRoot: {{ .Values.securityContext.runAsNonRoot | default true }}
-            runAsUser: {{ .Values.securityContext.runAsUser | default 1000 }}
-            allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation | default false }}
+            runAsNonRoot: {{ $securityContext.runAsNonRoot | default true }}
+            runAsUser: {{ $securityContext.runAsUser | default 1000 }}
+            allowPrivilegeEscalation: {{ $securityContext.allowPrivilegeEscalation | default false }}
             capabilities:
               drop:
                 - ALL
           ports:
             - containerPort: {{ .Values.containerPort }}
 
-          {{- if .Values.monitoring.otel.enabled }}
+          {{- if $otel.enabled | default false }}
           volumeMounts:
             - name: otel-agent
               mountPath: /app/otel
@@ -90,7 +93,7 @@ spec:
               value: {{ .Values.secretName | quote }}
             {{- end }}
 
-            {{- if .Values.monitoring.otel.enabled }}
+            {{- if $otel.enabled | default false }}
             - name: OTEL_SERVICE_NAME
               value: {{ .Values.appLabel | quote }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -107,7 +110,7 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: {{ .Values.configMapName | default "bankingapp-config" }}
+                name: {{ .Values.configMapName | default .Values.global.configMapName | default "platform-config" }}
 
           {{- if and .Values.secretName (ne .Values.secretName "") }}
             - secretRef:
@@ -137,7 +140,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
 
-      {{- if .Values.monitoring.otel.enabled }}
+      {{- if $otel.enabled | default false }}
       volumes:
         - name: otel-agent
           emptyDir: {}

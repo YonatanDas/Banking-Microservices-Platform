@@ -1,5 +1,6 @@
 {{- define "common.hpa" -}}
-{{- if .Values.hpa.enabled }}
+{{- $hpa := .Values.hpa | default dict }}
+{{- if $hpa.enabled | default false }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -9,21 +10,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.deploymentName }}
-  minReplicas: {{ .Values.hpa.minReplicas }}
-  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  minReplicas: {{ $hpa.minReplicas | default 1 }}
+  maxReplicas: {{ $hpa.maxReplicas | default 3 }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.hpa.cpu }}
+          averageUtilization: {{ $hpa.cpu | default 70 }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: {{ .Values.hpa.memory }}
+          averageUtilization: {{ $hpa.memory | default 70 }}
 {{- end }}
 {{- end }}
 

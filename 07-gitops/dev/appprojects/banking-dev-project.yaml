@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: banking-dev-project
+  name: platform-dev-project  # Generic name - change "platform" to your project prefix
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   sourceRepos:
-    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'
+    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'  # Update with your repository URL
     - '*'
   
   destinations:
@@ -60,8 +60,8 @@ spec:
     - name: dev-admin
       description: Dev environment administrator
       policies:
-        - p, proj:banking-dev-project:dev-admin, applications, *, banking-dev-project/*, allow
-        - p, proj:banking-dev-project:dev-admin, repositories, get, banking-dev-project/*, allow
+        - p, proj:platform-dev-project:dev-admin, applications, *, platform-dev-project/*, allow
+        - p, proj:platform-dev-project:dev-admin, repositories, get, platform-dev-project/*, allow
       groups:
         - dev-team
 

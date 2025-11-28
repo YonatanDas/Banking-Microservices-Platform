@@ -1,5 +1,6 @@
 {{- define "common.networkpolicy" -}}
-{{- if .Values.networkpolicy.enabled }}
+{{- $np := .Values.networkpolicy | default dict }}
+{{- if $np.enabled | default false }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -27,14 +28,16 @@ spec:
       - protocol: TCP
         port: {{ .Values.servicePort }}
 
-  {{- range $svc := .Values.networkpolicy.allowFromServices }}
+  {{- if $np.allowFromServices }}
+  {{- range $svc := $np.allowFromServices }}
   - from:
       - podSelector:
           matchLabels:
             app: {{ $svc }}
     ports:
       - protocol: TCP
-        port: {{ index $.Values.networkpolicy.targetPorts $svc }}
+        port: {{ index $np.targetPorts $svc | default $.Values.containerPort }}
+  {{- end }}
   {{- end }}
   {{- end }}
 
@@ -47,15 +50,15 @@ spec:
         port: {{ .Values.containerPort }}
 
   egress:
-    {{- if .Values.networkpolicy.allowToServices }}
-    {{- range $svc := .Values.networkpolicy.allowToServices }}
+    {{- if $np.allowToServices }}
+    {{- range $svc := $np.allowToServices }}
     - to:
         - podSelector:
             matchLabels:
               app: {{ $svc }}
       ports:
         - protocol: TCP
-          port: {{ index $.Values.networkpolicy.targetPorts $svc }}
+          port: {{ index $np.targetPorts $svc | default $.Values.containerPort }}
     {{- end }}
     {{- end }}
 

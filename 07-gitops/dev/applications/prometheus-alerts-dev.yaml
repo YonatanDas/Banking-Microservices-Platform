@@ -4,7 +4,7 @@ metadata:
   name: prometheus-alerts-dev
   namespace: argocd
 spec:
-  project: banking-dev-project
+  project: platform-dev-project
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git

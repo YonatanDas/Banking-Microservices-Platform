@@ -4,17 +4,23 @@ deploymentName: gateway-deployment
 serviceName: gateway
 appLabel: gateway
 appName: gateway
+ecrRepositoryName: gatewayserver  # ECR repository name differs from service name
+
+serviceAccount:
+  create: true
+  name: gateway-sa
+  needsRdsAccess: false  # Gateway doesn't need database access
 
 replicaCount: 2  # Recommended minimum for HA under LoadBalancer
 
 global:
   aws:
     region: us-east-1
-  configMapName: bankingapp-config
+  configMapName: platform-config
   springProfile: dev
 
 image:
-  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
+  repository: ""  # Computed from global.ecrRegistry and serviceName in template
   tag: v1.0.0
   pullPolicy: IfNotPresent
   

@@ -1,5 +1,6 @@
 {{- define "common.denyAllEgress" -}}
-{{- if .Values.networkpolicy.denyAllEgress }}
+{{- $np := .Values.networkpolicy | default dict }}
+{{- if $np.denyAllEgress | default false }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

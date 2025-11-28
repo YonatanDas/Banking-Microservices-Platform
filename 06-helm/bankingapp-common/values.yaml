@@ -2,6 +2,10 @@
 global:
   aws:
     region: us-east-1
+  awsAccountId: ""  # Set in environment values.yaml
+  ecrRegistry: ""   # Computed in environment values.yaml: "{awsAccountId}.dkr.ecr.{region}.amazonaws.com"
+  configMapName: "platform-config"  # Default, can be overridden
+  environment: ""   # Set in environment values.yaml
 
   # Default DB secret name (ESO will override per env)
   dbSecretName: "db-credentials"

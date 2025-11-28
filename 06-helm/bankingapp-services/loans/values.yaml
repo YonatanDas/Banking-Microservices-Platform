@@ -9,7 +9,7 @@ appName: loans
 replicaCount: 2
 
 image:
-  repository: 063630846340.dkr.ecr.us-east-1.amazonaws.com/loans
+  repository: ""  # Computed from global.ecrRegistry and serviceName in template
   tag: "latest"               # overridden by env
   pullPolicy: IfNotPresent
 

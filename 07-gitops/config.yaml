@@ -1,0 +1,35 @@
+# GitOps Configuration
+# Single source of truth for ArgoCD configuration
+
+# Git Repository Configuration
+repository:
+  url: "https://github.com/YonatanDas/Banking-Microservices-Platform.git"
+  # Override this in environment-specific configs if needed
+  target_revision: "main"
+
+# Project Naming
+project:
+  # Prefix for ArgoCD projects (e.g., "platform" or "" for no prefix)
+  prefix: ""
+  # Naming pattern: {prefix}-{environment}-project
+  # Examples: "platform-dev-project", "dev-project"
+  naming_pattern: "{prefix}-{environment}-project"
+
+# Application Naming
+application:
+  # Prefix for applications (e.g., "platform" or "" for no prefix)
+  prefix: ""
+  # Naming pattern: {prefix}-{component}-{environment}
+  # Examples: "platform-app-dev", "app-dev"
+  naming_pattern: "{prefix}-{component}-{environment}"
+
+# Paths
+paths:
+  helm_environments: "06-helm/environments"
+  helm_services: "06-helm/bankingapp-services"
+  monitoring: "08-monitoring"
+  policies: "09-kyverno/policies"
+
+# Environment-specific overrides can be defined in:
+# 07-gitops/{env}/config.yaml (optional)
+

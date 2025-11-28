@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: banking-app-stag
+  name: platform-app-stag  # Generic name - change "platform" to your project prefix
   namespace: argocd
   annotations:
     argocd-image-updater.argoproj.io/image-list: |
@@ -16,7 +16,7 @@ metadata:
     argocd-image-updater.argoproj.io/loans.update-strategy: semver
     argocd-image-updater.argoproj.io/gatewayserver.update-strategy: semver
 spec:
-  project: banking-stag-project
+  project: platform-stag-project
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git

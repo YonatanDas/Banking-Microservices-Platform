@@ -2,12 +2,14 @@ global:
   environment: prod
   aws:
     region: us-east-1
+  awsAccountId: "063630846340"
+  ecrRegistry: "063630846340.dkr.ecr.us-east-1.amazonaws.com"
+  configMapName: "platform-config"
   springProfile: prod
   javaToolOptions: ""
   otelExporterEndpoint: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
   otelMetricsExporter: otlp
   otelLogsExporter: none
-  
   
   eso:
     enabled: true
@@ -16,14 +18,13 @@ global:
     service: SecretsManager
     installCRDs: true
   
-configMapName: bankingapp-config
+configMapName: platform-config
 
 # Per-service overrides
 accounts:
   serviceAccount:
     name: accounts-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-accounts-rds-access-role
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
   image:
     tag: v1.0.0
   replicaCount: 1
@@ -38,8 +39,7 @@ accounts:
 cards:
   serviceAccount:
     name: cards-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-cards-rds-access-role
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
   image:
     tag: v1.0.0
   replicaCount: 1
@@ -54,8 +54,7 @@ cards:
 loans:
   serviceAccount:
     name: loans-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/prod-loans-rds-access-role
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
   image:
     tag: v1.0.0
   replicaCount: 1
@@ -71,6 +70,7 @@ gateway:
   serviceAccount:
     create: true
     name: gateway-sa
+    needsRdsAccess: false  # Gateway doesn't need database access
   image:
     tag: v1.0.0
   replicaCount: 1

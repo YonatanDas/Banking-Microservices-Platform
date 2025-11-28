@@ -1,5 +1,6 @@
 {{- define "common.servicemonitor" -}}
-{{- if .Values.monitoring.enabled }}
+{{- $monitoring := .Values.monitoring | default dict }}
+{{- if $monitoring.enabled | default false }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -13,8 +14,8 @@ spec:
       app: {{ .Values.appLabel }}
   endpoints:
     - port: http
-      path: {{ .Values.monitoring.metricsPath | default "/actuator/prometheus" }}
-      interval: {{ .Values.monitoring.scrapeInterval | default "30s" }}
+      path: {{ $monitoring.metricsPath | default "/actuator/prometheus" }}
+      interval: {{ $monitoring.scrapeInterval | default "30s" }}
       scrapeTimeout: 10s
 {{- end }}
 {{- end -}}

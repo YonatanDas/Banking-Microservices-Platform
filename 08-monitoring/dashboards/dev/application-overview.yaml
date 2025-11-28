@@ -9,8 +9,8 @@ data:
   application-overview.json: |
     {
       "dashboard": {
-        "title": "Banking App - Overview (Dev)",
-        "tags": ["banking", "overview", "dev"],
+        "title": "Platform - Overview (Dev)",  # Generic title - change "Platform" to your project name
+        "tags": ["platform", "overview", "dev"],  # Generic tags - change "platform" to your project name
         "timezone": "browser",
         "schemaVersion": 27,
         "version": 1,
@@ -22,7 +22,7 @@ data:
             "type": "stat",
             "targets": [
               {
-                "expr": "up{job=\"accounts\"}",
+                "expr": "up{job!~\"kube.*|prometheus.*|grafana.*|loki.*|tempo.*|argocd.*\"}",  # Label-based discovery
                 "refId": "A"
               }
             ],

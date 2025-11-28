@@ -1,10 +1,10 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: banking-app-application-alerts
+  name: platform-application-alerts  # Generic name - change "platform" to your project name
   namespace: monitoring
   labels:
-    app: banking-app
+    app: platform  # Generic label - change "platform" to your project name
     prometheus: kube-prometheus
 spec:
   groups:
@@ -34,13 +34,13 @@ spec:
             summary: "High request latency for {{ $labels.service }}"
             description: "Service {{ $labels.service }} in namespace {{ $labels.namespace }} has 99th percentile latency above 1 second for more than 5 minutes."
 
-        # Service Down
+        # Service Down - uses label-based discovery
         - alert: ServiceDown
-          expr: up{job=~"accounts|cards|loans|gateway"} == 0
+          expr: up{job!~"kube.*|prometheus.*|grafana.*|loki.*|tempo.*|argocd.*"} == 0
           for: 5m
           labels:
             severity: critical
           annotations:
             summary: "Service {{ $labels.job }} is down"
-            description: "Service {{ $labels.job }} has been down for more than 5 minutes."
+            description: "Service {{ $labels.job }} in namespace {{ $labels.namespace }} has been down for more than 5 minutes."
 

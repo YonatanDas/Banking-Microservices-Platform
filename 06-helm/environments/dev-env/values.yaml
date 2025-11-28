@@ -2,6 +2,9 @@ global:
   environment: dev
   aws:
     region: us-east-1
+  awsAccountId: "063630846340"
+  ecrRegistry: "063630846340.dkr.ecr.us-east-1.amazonaws.com"
+  configMapName: "platform-config"
   springProfile: dev
   javaToolOptions: ""
   otelExporterEndpoint: "http://opentelemetry-collector-dev.monitoring.svc.cluster.local:4317"
@@ -15,15 +18,13 @@ global:
     service: SecretsManager
     installCRDs: true
   
-configMapName: bankingapp-config
+configMapName: platform-config
 
 # Per-service overrides
 accounts:
   serviceAccount:
     create: true
     name: accounts-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-accounts-rds-access-role
 
   replicaCount: 1
   secretName: dev-db-credentials
@@ -38,8 +39,7 @@ cards:
   serviceAccount:
     create: true
     name: cards-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-cards-rds-access-role
+    
 
   replicaCount: 1
   secretName: dev-db-credentials
@@ -54,8 +54,7 @@ loans:
   serviceAccount:
     create: true
     name: loans-sa
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-loans-rds-access-role
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
 
   replicaCount: 1
   secretName: dev-db-credentials
@@ -67,9 +66,11 @@ loans:
       agentVersion: "1.32.0"
 
 gateway:
+  ecrRepositoryName: gatewayserver  # ECR repository name differs from service name
   serviceAccount:
     create: true
     name: gateway-sa
+    needsRdsAccess: false  # Gateway doesn't need database access
 
   replicaCount: 1
   secretName: dev-db-credentials

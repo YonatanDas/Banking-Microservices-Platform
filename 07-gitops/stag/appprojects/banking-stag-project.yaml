@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: banking-stag-project
+  name: platform-stag-project  # Generic name - change "platform" to your project prefix
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   sourceRepos:
-    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'
+    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'  # Update with your repository URL
     - '*'
   
   destinations:
@@ -48,8 +48,8 @@ spec:
     - name: stag-admin
       description: Staging environment administrator
       policies:
-        - p, proj:banking-stag-project:stag-admin, applications, *, banking-stag-project/*, allow
-        - p, proj:banking-stag-project:stag-admin, repositories, get, banking-stag-project/*, allow
+        - p, proj:platform-stag-project:stag-admin, applications, *, platform-stag-project/*, allow
+        - p, proj:platform-stag-project:stag-admin, repositories, get, platform-stag-project/*, allow
       groups:
         - staging-team
 
