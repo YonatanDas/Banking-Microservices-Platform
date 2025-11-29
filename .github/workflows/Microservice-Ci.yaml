@@ -212,36 +212,6 @@ jobs:
       - name: Update Docker Cache
         run: ./.github/scripts/05-docker-cache-cleanup.sh
 
-      - name: Check if service is new
-        id: is-new-service
-        run: |
-          if [ ! -d "06-helm/bankingapp-services/${{ matrix.service }}" ]; then
-            echo "is_new=true" >> $GITHUB_OUTPUT
-            echo "🆕 New service detected: ${{ matrix.service }}"
-            echo "   Will generate Helm chart and update environment dependencies."
-          else
-            echo "is_new=false" >> $GITHUB_OUTPUT
-            echo "✅ Existing service: ${{ matrix.service }}"
-            echo "   Chart already exists, skipping chart generation."
-          fi
-
-      - name: Generate Helm chart if new service
-        if: steps.is-new-service.outputs.is_new == 'true'
-        run: |
-          chmod +x .github/platform/scripts/generate-service-chart.sh
-          .github/platform/scripts/generate-service-chart.sh "${{ matrix.service }}"
-
-      - name: Update environment Chart dependencies
-        run: |
-          chmod +x .github/platform/scripts/update-env-chart.sh
-          .github/platform/scripts/update-env-chart.sh "${{ matrix.service }}"
-
-      - name: Update Helm Image Tags
-        run: ./.github/scripts/14-update-helm-values.sh \
-            "${{ env.SERVICE }}" \
-            "${{ github.run_number }}" \
-            "dev"
-
       - name: Save Build Metadata
         run: echo "Image built at $(date)" > build-info.txt
       - name: Upload Build Info
@@ -335,6 +305,56 @@ jobs:
             "${{ env.REGISTRY }}" \
             "${{ env.SERVICE }}" \
             "${{ github.run_number }}"
+
+  # -------------------------------
+  # HELM OPERATIONS
+  # -------------------------------
+  Helm-Operations:
+    runs-on: ubuntu-latest
+    needs: [Build-And-Push, Scan-And-SBOM, Sign-And-Verify, services-changed]
+    if: needs.services-changed.outputs.any_changed == 'true'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.services-changed.outputs.services) }}
+    env:
+      SERVICE: ${{ matrix.service }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Resolve service directory from config
+        run: |
+          chmod +x .github/scripts/*.sh
+          # Install yq if not already installed
+          if ! command -v yq &> /dev/null; then
+            wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+            chmod +x /usr/local/bin/yq
+          fi
+          ./.github/scripts/00-resolve-service-path.sh "${{ matrix.service }}"
+      
+      - name: Check if service is new
+        id: is-new-service
+        run: |
+          chmod +x .github/platform/scripts/check-service-is-new.sh
+          .github/platform/scripts/check-service-is-new.sh "${{ matrix.service }}"
+
+      - name: Generate Helm chart if new service
+        if: steps.is-new-service.outputs.is_new == 'true'
+        run: |
+          chmod +x .github/platform/scripts/generate-service-chart.sh
+          .github/platform/scripts/generate-service-chart.sh "${{ matrix.service }}"
+
+      - name: Update environment Chart dependencies
+        run: |
+          chmod +x .github/platform/scripts/update-env-chart.sh
+          .github/platform/scripts/update-env-chart.sh "${{ matrix.service }}"
+
+      - name: Update Helm Image Tags
+        run: ./.github/scripts/14-update-helm-values.sh \
+            "${{ env.SERVICE }}" \
+            "${{ github.run_number }}" \
+            "dev"
 
   # -------------------------------
   # COLLECT ALL ARTIFACTS AND UPLOAD TO S3
