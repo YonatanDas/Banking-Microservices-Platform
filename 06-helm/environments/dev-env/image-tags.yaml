@@ -1,6 +1,6 @@
 accounts:
   image:
-    tag: 24
+    tag: 37
 cards:
   image:
     tag: 24
