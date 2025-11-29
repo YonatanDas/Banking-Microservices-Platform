@@ -20,7 +20,7 @@ services="$(printf '%s\n' "${changed_files}" \
   | cut -d'/' -f2 \
   | sort -u \
   | jq -R . \
-  | jq -s .)"
+  | jq -s -c .)"
 
 if [ -z "${services}" ] || [ "${services}" = "[]" ]; then
   services="[]"
@@ -33,7 +33,11 @@ echo "Detected services: ${services}"
 echo "Any changed: ${any_changed}"
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
-  echo "changes=${services}" >> "${GITHUB_OUTPUT}"
+  {
+    echo "changes<<EOF"
+    echo "${services}"
+    echo "EOF"
+  } >> "${GITHUB_OUTPUT}"
   echo "any_changed=${any_changed}" >> "${GITHUB_OUTPUT}"
 else
   echo "changes=${services}"
