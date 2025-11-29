@@ -24,14 +24,20 @@ services="$(printf '%s\n' "${changed_files}" \
 
 if [ -z "${services}" ] || [ "${services}" = "[]" ]; then
   services="[]"
+  any_changed="false"
+else
+  any_changed="true"
 fi
 
 echo "Detected services: ${services}"
+echo "Any changed: ${any_changed}"
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   echo "changes=${services}" >> "${GITHUB_OUTPUT}"
+  echo "any_changed=${any_changed}" >> "${GITHUB_OUTPUT}"
 else
   echo "changes=${services}"
+  echo "any_changed=${any_changed}"
 fi
 
 
