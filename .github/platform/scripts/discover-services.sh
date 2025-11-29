@@ -65,37 +65,58 @@ fi
 echo ""
 
 # Extract service names from changed files
-services_raw="$(printf '%s\n' "${changed_files}" \
-  | grep '^services/' || true \
-  | cut -d'/' -f2 \
-  | sort -u)"
+# Process each line separately to extract service name (second field after splitting by /)
+valid_services=()
+invalid_services=()
 
 echo "=== Service Detection ==="
-if [ -z "${services_raw}" ]; then
-  echo "No services detected in changed files"
+if [ -z "${changed_files}" ]; then
+  echo "No changed files detected"
   services="[]"
   any_changed="false"
 else
-  echo "Raw service names detected:"
-  echo "${services_raw}" | while read -r svc; do
-    echo "  - ${svc}"
-  done
+  echo "Processing changed files to extract service names:"
   
-  # Validate that detected services actually exist in services/ directory
+  # Process each changed file
+  while IFS= read -r file_path; do
+    # Skip empty lines
+    [ -z "${file_path}" ] && continue
+    
+    # Only process files under services/
+    if [[ "${file_path}" =~ ^services/([^/]+)/ ]]; then
+      service_name="${BASH_REMATCH[1]}"
+      echo "  📁 ${file_path} -> service: ${service_name}"
+      
+      # Validate that service directory exists
+      if [ -d "services/${service_name}" ]; then
+        # Only add if not already in array
+        if [[ ! " ${valid_services[@]} " =~ " ${service_name} " ]]; then
+          valid_services+=("${service_name}")
+        fi
+      else
+        if [[ ! " ${invalid_services[@]} " =~ " ${service_name} " ]]; then
+          invalid_services+=("${service_name}")
+        fi
+      fi
+    fi
+  done <<< "${changed_files}"
+  
   echo ""
   echo "Validating service directories exist:"
-  valid_services=()
-  invalid_services=()
   
-  while IFS= read -r svc; do
-    if [ -n "${svc}" ] && [ -d "services/${svc}" ]; then
-      valid_services+=("${svc}")
+  # Log valid services
+  if [ ${#valid_services[@]} -gt 0 ]; then
+    for svc in "${valid_services[@]}"; do
       echo "  ✅ ${svc} - directory exists"
-    else
-      invalid_services+=("${svc}")
+    done
+  fi
+  
+  # Log invalid services
+  if [ ${#invalid_services[@]} -gt 0 ]; then
+    for svc in "${invalid_services[@]}"; do
       echo "  ⚠️  ${svc} - directory NOT found (will be filtered out)"
-    fi
-  done <<< "${services_raw}"
+    done
+  fi
   
   # Convert valid services to JSON array
   if [ ${#valid_services[@]} -eq 0 ]; then
