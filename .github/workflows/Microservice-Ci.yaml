@@ -33,6 +33,7 @@ jobs:
       services: ${{ steps.detect.outputs.changes }}
     steps:
       - uses: actions/checkout@v3
+        fetch-depth: 0
       - name: Install jq
         run: |
           sudo apt-get update
