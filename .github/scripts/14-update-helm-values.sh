@@ -53,7 +53,18 @@ echo "📦 Installing yq..."
 wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
 chmod +x /usr/local/bin/yq
 
-# Function to apply our change (used after rebase)
+# Function to check if our tag is already set correctly
+check_tag_already_set() {
+  local current_tag
+  current_tag=$(yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" 2>/dev/null || echo "")
+  if [[ "${current_tag}" == "${IMAGE_TAG}" ]]; then
+    echo "✅ Tag ${HELM_SERVICE}.image.tag is already set to ${IMAGE_TAG}"
+    return 0
+  fi
+  return 1
+}
+
+# Function to apply our change
 apply_tag_update() {
   yq eval ".${HELM_SERVICE}.image.tag = ${IMAGE_TAG}" -i "${TAGS_FILE}"
   
@@ -67,27 +78,54 @@ apply_tag_update() {
   fi
 }
 
-# Function to sync with remote and apply our change
-sync_and_update() {
-  echo "📥 Syncing with remote branch: ${CURRENT_BRANCH}..."
+# Function to sync with remote using rebase (preserves local commits)
+sync_with_rebase() {
+  echo "📥 Fetching latest changes from ${CURRENT_BRANCH}..."
   git fetch origin "${CURRENT_BRANCH}"
   
-  # Reset to remote state (discard any local changes)
-  git reset --hard "origin/${CURRENT_BRANCH}"
+  # Check if we have local commits
+  if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline 2>/dev/null | grep -q .; then
+    echo "🔄 Rebasing local commits on top of remote..."
+    # We have local commits, rebase them on top of remote
+    if ! git rebase "origin/${CURRENT_BRANCH}"; then
+      # Rebase conflict - abort and start fresh
+      echo "⚠️  Rebase conflict detected, aborting and starting fresh..."
+      git rebase --abort 2>/dev/null || true
+      git reset --hard "origin/${CURRENT_BRANCH}"
+      return 1
+    fi
+  else
+    # No local commits, just reset to remote
+    echo "📥 No local commits, syncing with remote..."
+    git reset --hard "origin/${CURRENT_BRANCH}"
+  fi
   
-  # Now apply our change
-  apply_tag_update
+  return 0
 }
 
 # Initial sync
-sync_and_update
+echo "🔄 Initial sync with remote..."
+sync_with_rebase
 
-# Check if there are changes
-if git status --porcelain "${TAGS_FILE}" | grep -q .; then
-  echo "📝 Changes detected, proceeding with commit"
-else
-  echo "ℹ️  No changes to commit (tag already set to ${IMAGE_TAG})"
+# Check if tag is already set (before making any changes)
+if check_tag_already_set; then
+  echo "ℹ️  Tag already set correctly, no action needed"
   exit 0
+fi
+
+# Apply our change
+apply_tag_update
+
+# Check if there are changes to commit
+if ! git status --porcelain "${TAGS_FILE}" | grep -q .; then
+  echo "ℹ️  No changes detected (tag might have been set by another process)"
+  if check_tag_already_set; then
+    echo "✅ Tag is already set correctly"
+    exit 0
+  else
+    echo "⚠️  Unexpected state: file unchanged but tag not set correctly"
+    exit 1
+  fi
 fi
 
 # Commit and push with retry logic
@@ -96,31 +134,40 @@ RETRY_COUNT=0
 BASE_DELAY=2  # Start with 2 seconds
 
 while true; do
-  # Stage and commit
+  # Stage the file
   git add "${TAGS_FILE}"
   
-  # Check if commit is needed (might have been committed in previous retry)
-  if git diff --cached --quiet && git diff HEAD --quiet "${TAGS_FILE}"; then
-    echo "ℹ️  No changes to commit (might have been committed already)"
-    # Still need to push if there's a commit
-    if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline | grep -q .; then
-      echo "📤 Pushing existing commit..."
+  # Check if we need to commit (file has changes)
+  if git diff --cached --quiet; then
+    echo "ℹ️  No staged changes (might have been committed already)"
+    # Check if we have unpushed commits
+    if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline 2>/dev/null | grep -q .; then
+      echo "📤 We have local commits, will try to push..."
     else
-      echo "✅ Already up to date"
-      exit 0
+      # Check if tag is already set (maybe another job did it)
+      if check_tag_already_set; then
+        echo "✅ Tag already set correctly (likely by another job)"
+        exit 0
+      else
+        echo "⚠️  No changes and no commits, but tag not set. Re-applying update..."
+        apply_tag_update
+        git add "${TAGS_FILE}"
+      fi
     fi
   else
+    # We have changes to commit
     echo "📝 Committing changes..."
     git commit -m "chore: update ${HELM_SERVICE} image tag to ${IMAGE_TAG} [skip ci]" || {
-      echo "⚠️  Commit failed (might be no changes)"
-      # Check if file already has our tag
-      CURRENT_TAG=$(yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" 2>/dev/null || echo "")
-      if [[ "${CURRENT_TAG}" == "${IMAGE_TAG}" ]]; then
+      echo "⚠️  Commit failed"
+      # Check if tag is already set
+      if check_tag_already_set; then
         echo "✅ Tag already set correctly, no commit needed"
         exit 0
       fi
+      echo "❌ Commit failed and tag not set correctly" >&2
       exit 1
     }
+    echo "✅ Changes committed locally"
   fi
   
   # Try to push
@@ -135,8 +182,17 @@ while true; do
   
   if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
     echo "❌ Failed to push changes after $MAX_RETRIES retries." >&2
-    echo "💡 Another job may have updated the file. Change will be picked up in the next run." >&2
-    exit 1
+    echo "💡 Another job may have updated the file. Checking final state..." >&2
+    
+    # Final check: sync and see if tag is set
+    sync_with_rebase || true
+    if check_tag_already_set; then
+      echo "✅ Tag is set correctly (likely by another job), exiting successfully"
+      exit 0
+    else
+      echo "❌ Tag is not set correctly after all retries" >&2
+      exit 1
+    fi
   fi
   
   # Calculate exponential backoff with jitter (random 0-2 seconds)
@@ -144,17 +200,30 @@ while true; do
   echo "⚠️  Push failed (likely due to parallel updates). Retrying in ${DELAY} seconds..."
   sleep "${DELAY}"
   
-  # Sync with remote and re-apply our change
-  echo "🔄 Rebasing on latest changes..."
-  sync_and_update
-  
-  # Check if our change is still needed
-  CURRENT_TAG=$(yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" 2>/dev/null || echo "")
-  if [[ "${CURRENT_TAG}" == "${IMAGE_TAG}" ]]; then
-    echo "✅ Tag already set correctly by another job, no action needed"
-    exit 0
+  # Sync with remote using rebase (this preserves our local commit)
+  echo "🔄 Syncing with remote before retry..."
+  if ! sync_with_rebase; then
+    # Rebase failed, re-apply our change
+    echo "🔄 Re-applying tag update after rebase failure..."
+    apply_tag_update
+    git add "${TAGS_FILE}"
+    # Don't commit yet, let the loop handle it
+  else
+    # Rebase succeeded, check if our change is still needed
+    if check_tag_already_set; then
+      echo "✅ Tag already set correctly by another job, no action needed"
+      exit 0
+    fi
+    
+    # Check if our commit is still there
+    if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline 2>/dev/null | grep -q .; then
+      echo "✅ Local commit preserved after rebase, will retry push"
+    else
+      # Our commit was lost (maybe rebase dropped it), re-apply change
+      echo "⚠️  Local commit lost during rebase, re-applying change..."
+      apply_tag_update
+      git add "${TAGS_FILE}"
+      # Will commit in next iteration
+    fi
   fi
-  
-  # Reset any existing commits (we'll create a new one)
-  git reset --soft "origin/${CURRENT_BRANCH}" 2>/dev/null || true
-  done
+done
