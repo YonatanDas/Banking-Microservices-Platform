@@ -5,7 +5,7 @@ concurrency:
 
 on:
   push:
-    branches: [ "main", "feature/platform-modularization" ]
+    branches: [ "main", "Feature/platform-modularization" ]
     paths:
       - "services/**"
   pull_request:
