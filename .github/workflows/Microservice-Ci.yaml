@@ -5,12 +5,13 @@ concurrency:
 
 on:
   push:
+    # Test branch for CI validation
     branches: [ "main", "Feature/platform-modularization" ]
     paths:
-      - "services/**"
+      - "services/**"  # Only trigger when service code changes
   pull_request:
     paths:
-      - "services/**"
+      - "services/**"  # Only trigger when service code changes
 
 permissions:
   contents: write
@@ -211,14 +212,24 @@ jobs:
       - name: Update Docker Cache
         run: ./.github/scripts/05-docker-cache-cleanup.sh
 
+      - name: Check if service is new
+        id: is-new-service
+        run: |
+          if [ ! -d "06-helm/bankingapp-services/${{ matrix.service }}" ]; then
+            echo "is_new=true" >> $GITHUB_OUTPUT
+            echo "🆕 New service detected: ${{ matrix.service }}"
+            echo "   Will generate Helm chart and update environment dependencies."
+          else
+            echo "is_new=false" >> $GITHUB_OUTPUT
+            echo "✅ Existing service: ${{ matrix.service }}"
+            echo "   Chart already exists, skipping chart generation."
+          fi
+
       - name: Generate Helm chart if new service
+        if: steps.is-new-service.outputs.is_new == 'true'
         run: |
           chmod +x .github/platform/scripts/generate-service-chart.sh
-          if [ ! -d "06-helm/bankingapp-services/${{ matrix.service }}" ]; then
-            .github/platform/scripts/generate-service-chart.sh "${{ matrix.service }}"
-          else
-            echo "Chart already exists for ${{ matrix.service }}, skipping generation."
-          fi
+          .github/platform/scripts/generate-service-chart.sh "${{ matrix.service }}"
 
       - name: Update environment Chart dependencies
         run: |

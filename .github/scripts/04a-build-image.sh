@@ -9,6 +9,18 @@ CACHE_DIR="/tmp/.buildx-cache"
 NEW_CACHE_DIR="/tmp/.buildx-cache-new"
 REPORT_DIR=".ci_artifacts/${SERVICE}/${GITHUB_SHA}/build/jar-files"
 
+# Validate SERVICE_DIR is set and exists
+if [ -z "${SERVICE_DIR:-}" ]; then
+  echo "❌ ERROR: SERVICE_DIR is not set. This should be set by 00-resolve-service-path.sh" >&2
+  exit 1
+fi
+
+if [ ! -d "${SERVICE_DIR}" ]; then
+  echo "❌ ERROR: SERVICE_DIR does not exist: ${SERVICE_DIR}" >&2
+  exit 1
+fi
+
+echo "✅ SERVICE_DIR validated: ${SERVICE_DIR}"
 
 mkdir -p "${REPORT_DIR}"
 
