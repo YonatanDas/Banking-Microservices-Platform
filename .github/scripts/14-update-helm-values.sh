@@ -31,6 +31,23 @@ git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 git config pull.rebase true
 
+# Detect current branch (works for both push and PR events)
+if [ -n "${GITHUB_HEAD_REF:-}" ]; then
+  # PR event - use the head ref (feature branch)
+  CURRENT_BRANCH="${GITHUB_HEAD_REF}"
+elif [ -n "${GITHUB_REF:-}" ]; then
+  # Push event - extract branch from GITHUB_REF (refs/heads/branch-name)
+  CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+else
+  # Fallback to git command
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+fi
+
+# Default to main if detection failed
+CURRENT_BRANCH="${CURRENT_BRANCH:-main}"
+
+echo "🌿 Detected branch: ${CURRENT_BRANCH}"
+
 # Install yq
 echo "📦 Installing yq..."
 wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -52,11 +69,11 @@ apply_tag_update() {
 
 # Function to sync with remote and apply our change
 sync_and_update() {
-  echo "📥 Syncing with remote..."
-  git fetch origin main
+  echo "📥 Syncing with remote branch: ${CURRENT_BRANCH}..."
+  git fetch origin "${CURRENT_BRANCH}"
   
   # Reset to remote state (discard any local changes)
-  git reset --hard origin/main
+  git reset --hard "origin/${CURRENT_BRANCH}"
   
   # Now apply our change
   apply_tag_update
@@ -86,7 +103,7 @@ while true; do
   if git diff --cached --quiet && git diff HEAD --quiet "${TAGS_FILE}"; then
     echo "ℹ️  No changes to commit (might have been committed already)"
     # Still need to push if there's a commit
-    if git log origin/main..HEAD --oneline | grep -q .; then
+    if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline | grep -q .; then
       echo "📤 Pushing existing commit..."
     else
       echo "✅ Already up to date"
@@ -108,7 +125,7 @@ while true; do
   
   # Try to push
   echo "🚀 Attempting to push (attempt $((RETRY_COUNT+1))/$MAX_RETRIES)..."
-  if git push origin main; then
+  if git push origin "${CURRENT_BRANCH}"; then
     echo "✅ Successfully pushed image tag update"
     exit 0
   fi
@@ -139,5 +156,5 @@ while true; do
   fi
   
   # Reset any existing commits (we'll create a new one)
-  git reset --soft origin/main 2>/dev/null || true
-done
+  git reset --soft "origin/${CURRENT_BRANCH}" 2>/dev/null || true
+  done

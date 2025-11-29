@@ -23,6 +23,9 @@ if [ -d "$TARGET_PATH/target" ]; then
   rm -rf "$TARGET_PATH/target"
 fi
 
+# Extract service name from SERVICE_DIR (e.g., "services/accounts" -> "accounts")
+SERVICE_NAME=$(basename "${SERVICE_DIR}")
+
 # Run Trivy FS scan
 trivy fs "$TARGET_PATH" \
   --exit-code 0 \
@@ -30,6 +33,6 @@ trivy fs "$TARGET_PATH" \
   --scanners vuln,secret,config \
   --severity HIGH,CRITICAL \
   --format table \
-  --output "$ROOT_DIR/${SERVICE_DIR}-trivy-FS-report.txt"
+  --output "$ROOT_DIR/${SERVICE_NAME}-trivy-FS-report.txt"
 
 echo "✅ Trivy FS scan completed successfully for $SERVICE_DIR"
