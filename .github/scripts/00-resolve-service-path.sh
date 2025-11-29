@@ -16,11 +16,16 @@ fi
 SERVICE_DIR=$(./.github/scripts/00-get-service-config.sh "${SERVICE}" path)
 
 if [[ -z "${SERVICE_DIR}" ]]; then
-  echo "Error: Could not find path for service ${SERVICE} in .github/config/services.yaml" >&2
-  exit 1
+  # Fallback: assume conventional layout services/<service>
+  if [ -d "services/${SERVICE}" ]; then
+    SERVICE_DIR="services/${SERVICE}"
+    echo "ℹ️  ${SERVICE} not found in .github/config/services.yaml, using default path ${SERVICE_DIR}"
+  else
+    echo "Error: Could not find path for service ${SERVICE} in .github/config/services.yaml or services/${SERVICE}" >&2
+    exit 1
+  fi
 fi
 
 # Set GitHub Actions environment variable
 echo "SERVICE_DIR=./${SERVICE_DIR}" >> "$GITHUB_ENV"
 echo "✅ Resolved service directory: ${SERVICE_DIR}"
-

@@ -5,9 +5,11 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "main", "Feature/platform-modularization" ]
+    paths:
+      - "services/**"
+  pull_request:
     paths:
       - "services/**"
 
@@ -82,7 +84,7 @@ jobs:
         run: chmod +x .github/scripts/*.sh
 
       - name: lint + test + coverage
-        run: ./.github/scripts/01-test-java.sh ${{ env.SERVICE }}
+        run: ./.github/scripts/01-test-java.sh "${{ env.SERVICE_DIR }}"
 
       - name: Upload Test & Coverage Reports
         uses: actions/upload-artifact@v4
@@ -124,12 +126,11 @@ jobs:
         with:
           path: /home/runner/.cache/trivy
           key: trivy-db-${{ runner.os }} 
-
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@v0.2.0
 
       - name: Trivy Scan + report
-        run: ./.github/scripts/02-trivy-fs-scan.sh ${{ env.SERVICE }}
+        run: ./.github/scripts/02-trivy-fs-scan.sh "${{ env.SERVICE_DIR }}"
 
       - name: Upload Trivy FS Report
         uses: actions/upload-artifact@v4

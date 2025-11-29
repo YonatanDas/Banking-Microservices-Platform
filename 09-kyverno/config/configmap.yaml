@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kyverno-platform-config
+  namespace: kyverno
+  labels:
+    app: kyverno
+    component: config
+data:
+  # Allowed container registry pattern
+  # Update this with your ECR registry URL pattern
+  allowedRegistry: "063630846340.dkr.ecr.us-east-1.amazonaws.com"
+  
+  # Registry pattern format (for regex matching)
+  # Use {accountId} and {region} as placeholders if needed
+  registryPattern: "{accountId}.dkr.ecr.{region}.amazonaws.com"
+  
+  # Excluded namespaces (system namespaces that should be allowed)
+  excludedNamespaces: "kube-system,kyverno,argocd,external-secrets,monitoring"
+

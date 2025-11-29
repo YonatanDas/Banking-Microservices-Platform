@@ -24,7 +24,7 @@ services:
     service_account_name: "loans-sa"
     port: 8090
     
-  gatewayserver:
+  gateway:
     path: "services/gateway"
     helm_name: "gateway"  # Helm chart uses "gateway" instead of "gatewayserver"
     dockerfile: "Dockerfile"
@@ -42,4 +42,3 @@ global:
   # Helm chart paths
   helm_services_path: "06-helm/bankingapp-services"
   helm_environments_path: "06-helm/environments"
-
