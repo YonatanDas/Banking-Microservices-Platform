@@ -54,11 +54,25 @@ wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/downl
 chmod +x /usr/local/bin/yq
 
 # Function to check if our tag is already set correctly
+# Optionally checks in a specific commit (default: working directory)
 check_tag_already_set() {
+  local check_ref="${1:-}"  # Optional: commit ref to check (e.g., "HEAD", "origin/branch")
   local current_tag
-  current_tag=$(yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" 2>/dev/null || echo "")
+  
+  if [[ -n "${check_ref}" ]]; then
+    # Check in a specific commit
+    current_tag=$(git show "${check_ref}:${TAGS_FILE}" 2>/dev/null | yq eval ".${HELM_SERVICE}.image.tag" 2>/dev/null || echo "")
+  else
+    # Check in working directory
+    current_tag=$(yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" 2>/dev/null || echo "")
+  fi
+  
   if [[ "${current_tag}" == "${IMAGE_TAG}" ]]; then
-    echo "✅ Tag ${HELM_SERVICE}.image.tag is already set to ${IMAGE_TAG}"
+    if [[ -n "${check_ref}" ]]; then
+      echo "✅ Tag ${HELM_SERVICE}.image.tag is already set to ${IMAGE_TAG} in ${check_ref}"
+    else
+      echo "✅ Tag ${HELM_SERVICE}.image.tag is already set to ${IMAGE_TAG}"
+    fi
     return 0
   fi
   return 1
@@ -107,9 +121,9 @@ sync_with_rebase() {
 echo "🔄 Initial sync with remote..."
 sync_with_rebase
 
-# Check if tag is already set (before making any changes)
-if check_tag_already_set; then
-  echo "ℹ️  Tag already set correctly, no action needed"
+# Check if tag is already set in remote (before making any changes)
+if check_tag_already_set "origin/${CURRENT_BRANCH}"; then
+  echo "ℹ️  Tag already set correctly in remote, no action needed"
   exit 0
 fi
 
@@ -184,13 +198,14 @@ while true; do
     echo "❌ Failed to push changes after $MAX_RETRIES retries." >&2
     echo "💡 Another job may have updated the file. Checking final state..." >&2
     
-    # Final check: sync and see if tag is set
+    # Final check: sync and see if tag is set in remote
     sync_with_rebase || true
-    if check_tag_already_set; then
-      echo "✅ Tag is set correctly (likely by another job), exiting successfully"
+    if check_tag_already_set "origin/${CURRENT_BRANCH}"; then
+      echo "✅ Tag is set correctly in remote (likely by another job), exiting successfully"
       exit 0
     else
-      echo "❌ Tag is not set correctly after all retries" >&2
+      echo "❌ Tag is not set correctly in remote after all retries" >&2
+      echo "💡 Current remote tag value: $(git show "origin/${CURRENT_BRANCH}:${TAGS_FILE}" 2>/dev/null | yq eval ".${HELM_SERVICE}.image.tag" 2>/dev/null || echo "unknown")" >&2
       exit 1
     fi
   fi
@@ -210,20 +225,39 @@ while true; do
     # Don't commit yet, let the loop handle it
   else
     # Rebase succeeded, check if our change is still needed
-    if check_tag_already_set; then
-      echo "✅ Tag already set correctly by another job, no action needed"
+    # First check if tag is set in the remote (what will be pushed)
+    if check_tag_already_set "origin/${CURRENT_BRANCH}"; then
+      echo "✅ Tag already set correctly in remote, no action needed"
       exit 0
     fi
     
     # Check if our commit is still there
     if git log "origin/${CURRENT_BRANCH}"..HEAD --oneline 2>/dev/null | grep -q .; then
-      echo "✅ Local commit preserved after rebase, will retry push"
+      # We have local commits, verify they contain our tag update
+      if check_tag_already_set "HEAD"; then
+        echo "✅ Local commit contains correct tag, will retry push"
+      else
+        # Our commit doesn't have the tag set, re-apply change
+        echo "⚠️  Local commit doesn't have correct tag, re-applying change..."
+        apply_tag_update
+        git add "${TAGS_FILE}"
+        # Will commit in next iteration
+      fi
     else
-      # Our commit was lost (maybe rebase dropped it), re-apply change
-      echo "⚠️  Local commit lost during rebase, re-applying change..."
-      apply_tag_update
-      git add "${TAGS_FILE}"
-      # Will commit in next iteration
+      # No local commits, check if working directory has the tag
+      if check_tag_already_set; then
+        # Tag is in working directory but not committed, we need to commit it
+        echo "⚠️  Tag is set in working directory but not committed, will commit and push"
+        apply_tag_update  # Ensure it's set
+        git add "${TAGS_FILE}"
+        # Will commit in next iteration
+      else
+        # Tag is not set, re-apply change
+        echo "⚠️  Tag not set after rebase, re-applying change..."
+        apply_tag_update
+        git add "${TAGS_FILE}"
+        # Will commit in next iteration
+      fi
     fi
   fi
 done
