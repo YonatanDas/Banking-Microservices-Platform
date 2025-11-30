@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Resolve service path and set GitHub Actions environment variable
+# Resolve service path by finding service.yaml in services/ directories
 # Usage: .github/scripts/00-resolve-service-path.sh <service_name>
 # Sets: SERVICE_DIR environment variable for GitHub Actions
 
@@ -12,18 +12,18 @@ if [[ -z "${SERVICE}" ]]; then
   exit 1
 fi
 
-# Get the service path from config
-SERVICE_DIR=$(./.github/scripts/00-get-service-config.sh "${SERVICE}" path)
+# Look for service.yaml in services/<service> directory
+SERVICE_DIR="services/${SERVICE}"
 
-if [[ -z "${SERVICE_DIR}" ]]; then
-  # Fallback: assume conventional layout services/<service>
-  if [ -d "services/${SERVICE}" ]; then
-    SERVICE_DIR="services/${SERVICE}"
-    echo "ℹ️  ${SERVICE} not found in .github/config/services.yaml, using default path ${SERVICE_DIR}"
-  else
-    echo "Error: Could not find path for service ${SERVICE} in .github/config/services.yaml or services/${SERVICE}" >&2
-    exit 1
-  fi
+if [[ ! -d "${SERVICE_DIR}" ]]; then
+  echo "Error: Service directory not found: ${SERVICE_DIR}" >&2
+  exit 1
+fi
+
+# Verify service.yaml exists
+if [[ ! -f "${SERVICE_DIR}/service.yaml" ]]; then
+  echo "Error: service.yaml not found in ${SERVICE_DIR}" >&2
+  exit 1
 fi
 
 # Set GitHub Actions environment variable
