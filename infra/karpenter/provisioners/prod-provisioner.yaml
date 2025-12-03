@@ -1,0 +1,40 @@
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: prod-default
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+        node.kubernetes.io/instance-type: karpenter
+    spec:
+      nodeClassRef:
+        name: prod-default
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+            - t3.large
+            - t3.xlarge
+            - m5.large
+            - m5.xlarge
+            - m5.2xlarge
+            - m5.4xlarge
+  limits:
+    cpu: 5000
+    memory: 10000Gi
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    consolidateAfter: 300s
+    expireAfter: 720h
+

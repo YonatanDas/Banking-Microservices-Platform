@@ -14,7 +14,7 @@ if [ -z "$SERVICE_NAME" ]; then
   exit 1
 fi
 
-CHART_DIR="$ROOT_DIR/06-helm/bankingapp-services/$SERVICE_NAME"
+CHART_DIR="$ROOT_DIR/helm/bankingapp-services/$SERVICE_NAME"
 
 if [ ! -d "$CHART_DIR" ]; then
   if [ -n "${GITHUB_OUTPUT:-}" ]; then

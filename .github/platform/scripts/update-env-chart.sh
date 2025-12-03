@@ -15,7 +15,7 @@ if ! command -v yq >/dev/null 2>&1; then
 fi
 
 for ENV in dev-env stag-env prod-env; do
-  CHART="$ROOT_DIR/06-helm/environments/$ENV/Chart.yaml"
+  CHART="$ROOT_DIR/helm/environments/$ENV/Chart.yaml"
 
   if [ ! -f "$CHART" ]; then
     echo "[$ENV] Chart.yaml not found at $CHART, skipping."

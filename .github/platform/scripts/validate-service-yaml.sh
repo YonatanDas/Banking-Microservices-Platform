@@ -18,10 +18,10 @@ fi
 # Validate all service.yaml files or a specific one
 FILES=("$@")
 if [ ${#FILES[@]} -eq 0 ]; then
-  # Default: all service.yaml under services/
+  # Default: all service.yaml under applications/
   while IFS= read -r f; do
     FILES+=("$f")
-  done < <(find "$ROOT_DIR/services" -maxdepth 2 -name "service.yaml")
+  done < <(find "$ROOT_DIR/applications" -maxdepth 2 -name "service.yaml")
 fi
 
 for f in "${FILES[@]}"; do

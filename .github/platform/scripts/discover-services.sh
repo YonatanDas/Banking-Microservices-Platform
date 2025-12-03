@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Discover changed services and write a JSON array to the GitHub Actions output
-# variable "changes". A service is detected if any file under services/<name>/ changed.
-# Also validates that detected services actually exist in services/ directory.
+# variable "changes". A service is detected if any file under applications/<name>/ changed.
+# Also validates that detected services actually exist in applications/ directory.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$ROOT_DIR"
@@ -82,13 +82,13 @@ else
     # Skip empty lines
     [ -z "${file_path}" ] && continue
     
-    # Only process files under services/
-    if [[ "${file_path}" =~ ^services/([^/]+)/ ]]; then
+    # Only process files under applications/
+    if [[ "${file_path}" =~ ^applications/([^/]+)/ ]]; then
       service_name="${BASH_REMATCH[1]}"
       echo "  📁 ${file_path} -> service: ${service_name}"
       
       # Validate that service directory exists
-      if [ -d "services/${service_name}" ]; then
+      if [ -d "applications/${service_name}" ]; then
         # Only add if not already in array
         if [[ ! " ${valid_services[@]} " =~ " ${service_name} " ]]; then
           valid_services+=("${service_name}")

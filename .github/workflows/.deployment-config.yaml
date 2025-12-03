@@ -1,0 +1,81 @@
+# Deployment Configuration
+# This file contains deployment settings, service mappings, and environment configurations
+
+# Service port mappings
+service_ports:
+  accounts: 8080
+  cards: 9000
+  loans: 8090
+  gateway: 8072
+
+# Health endpoint paths
+health_endpoints:
+  path: /actuator/health
+  timeout: 10
+
+# Deployment windows (timezone: America/New_York)
+deployment_windows:
+  dev:
+    enabled: false
+    restrictions: []
+  
+  stag:
+    enabled: false
+    restrictions: []
+  
+  prod:
+    enabled: true
+    restrictions:
+      - days: [1, 2, 3, 4, 5]  # Monday-Friday
+        hours: [9, 10, 11, 12, 13, 14, 15, 16]  # 9 AM - 5 PM
+        timezone: America/New_York
+        message: "Production deployments are blocked during business hours (9 AM - 5 PM EST)"
+
+# Previous environment validation
+previous_environment_validation:
+  stag:
+    required_env: dev
+    enabled: true
+    message: "Image must be deployed to dev environment first"
+  
+  prod:
+    required_env: stag
+    enabled: true
+    message: "Image must be deployed to staging environment first"
+
+# ArgoCD configuration
+argocd:
+  namespace: argocd
+  sync_timeout: 300  # seconds
+  health_check_timeout: 600  # seconds
+
+# Kubernetes configuration
+kubernetes:
+  default_namespace: default
+  deployment_timeout: 300  # seconds
+  health_check_retries: 3
+
+# Smoke test configuration
+smoke_tests:
+  enabled: true
+  timeout: 60  # seconds
+  retries: 3
+
+# Metrics validation
+metrics:
+  enabled: true
+  prometheus_url: http://prometheus.monitoring.svc.cluster.local:9090
+  validation_delay: 10  # seconds to wait before checking metrics
+
+# Rollback configuration
+rollback:
+  enabled: true
+  auto_rollback_on_failure: true
+  rollback_timeout: 300  # seconds
+
+# Deployment records
+deployment_records:
+  enabled: true
+  directory: docs/deployments
+  retention_days: 365
+

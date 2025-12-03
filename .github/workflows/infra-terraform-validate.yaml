@@ -1,0 +1,157 @@
+name: Terraform Validate
+
+on:
+  pull_request:
+    paths:
+      - 'infra/terraform/**'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/terraform/**'
+  workflow_dispatch:
+
+concurrency:
+  group: terraform-validate-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  security-events: write
+  actions: read
+
+env:
+  AWS_REGION: us-east-1
+  TERRAFORM_VERSION: 1.6.0
+  TF_STATE_BUCKET: banking-terraform-state-18.10.25
+  TF_LOCK_TABLE: terraform-locks
+  AWS_ROLE: github-actions-terraform-role
+  Artifacts_S3_Bucket: my-ci-artifacts55
+  Artifacts_S3_Prefix: cloud-infrastructure
+  Artifacts_Folder: collected-artifacts
+  WORKFLOW_NAME: terraform-validate
+
+
+jobs:
+  terraform-format-check:
+    name: Format Check
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Check Terraform formatting
+        run: | 
+          terraform -chdir=./infra/terraform fmt -check -recursive > format-results.txt 2>&1 || true
+          cat format-results.txt
+
+  terraform-validate:
+    name: Validate (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, stag, prod] # If we want all env tests we do matrix for all env (dev, stage, prod)
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Validate Terraform
+        working-directory: infra/terraform/environments/${{ matrix.env }}
+        run: |
+          terraform init -backend=false
+          terraform validate > validation-results-${{ matrix.env }}.txt 2>&1 || true
+          cat validation-results-${{ matrix.env }}.txt
+
+  terraform-security-checkov:
+    name: Security Scan (Checkov)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, stag, prod]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x .github/scripts/infra/*.sh
+        shell: bash
+
+      - name: Run Checkov Scan
+        run: ./.github/scripts/infra/scan-terraform-security-checkov.sh ${{ matrix.env }}
+
+      - name: Upload Checkov reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-report
+          path: |
+            checkov-report.json
+            checkov-report.sarif
+          retention-days: 30
+          if-no-files-found: ignore
+
+  terraform-security-tfsec:
+    name: Security Scan (tfsec)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, stag, prod]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x .github/scripts/infra/*.sh
+        shell: bash
+
+      - name: Run TFsec Scan
+        run: ./.github/scripts/infra/scan-terraform-security-tfsec.sh ${{ matrix.env }}
+
+      - name: Upload tfsec reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tfsec-report
+          path: |
+            tfsec-report.json
+            tfsec-report.sarif
+          retention-days: 30
+          if-no-files-found: ignore
+
+  Collect-Artifacts:
+    runs-on: ubuntu-latest
+    needs: [terraform-format-check, terraform-validate, terraform-security-checkov, terraform-security-tfsec]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: collected-artifacts/
+      - name: Upload to S3
+        run: ./.github/scripts/shared/upload-build-artifacts-to-s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}} 
+
+      - name: Workflow Complete 
+        id: complete
+        run: |
+          echo "✅ Terraform validation and security scans complete."
+          echo "Artifacts uploaded to S3 for review."
+          echo "🎉"

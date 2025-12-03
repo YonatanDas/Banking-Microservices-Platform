@@ -9,8 +9,8 @@ if [ -z "$SERVICE_NAME" ]; then
   exit 1
 fi
 
-SERVICE_DIR="$ROOT_DIR/services/$SERVICE_NAME"
-CHART_DIR="$ROOT_DIR/06-helm/bankingapp-services/$SERVICE_NAME"
+SERVICE_DIR="$ROOT_DIR/applications/$SERVICE_NAME"
+CHART_DIR="$ROOT_DIR/helm/bankingapp-services/$SERVICE_NAME"
 
 if [ ! -d "$SERVICE_DIR" ]; then
   echo "Service directory not found: $SERVICE_DIR" >&2

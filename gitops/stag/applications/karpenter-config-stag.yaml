@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter-config-stag
+  namespace: argocd
+spec:
+  project: platform-stag-project
+  
+  source:
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
+    targetRevision: main
+    path: 12-karpenter
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /metadata/annotations
+

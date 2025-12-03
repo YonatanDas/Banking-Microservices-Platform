@@ -9,13 +9,13 @@ if [ -z "$SERVICE_NAME" ]; then
   exit 1
 fi
 
-SERVICE_YAML="$ROOT_DIR/services/$SERVICE_NAME/service.yaml"
+SERVICE_YAML="$ROOT_DIR/applications/$SERVICE_NAME/service.yaml"
 if [ ! -f "$SERVICE_YAML" ]; then
   echo "service.yaml not found for $SERVICE_NAME at $SERVICE_YAML" >&2
   exit 1
 fi
 
-OUTPUT_VALUES="${2:-$ROOT_DIR/06-helm/bankingapp-services/$SERVICE_NAME/values.yaml}"
+OUTPUT_VALUES="${2:-$ROOT_DIR/helm/bankingapp-services/$SERVICE_NAME/values.yaml}"
 
 if ! command -v yq >/dev/null 2>&1; then
   echo "yq is required" >&2

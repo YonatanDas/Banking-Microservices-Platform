@@ -1,0 +1,28 @@
+name: AWS OIDC + ECR setup
+description: Configure AWS credentials via OIDC and log in to ECR
+inputs:
+  aws_role:
+    required: true
+  aws_region:
+    required: true
+  registry:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS OIDC
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ inputs.aws_role }}
+        aws-region: ${{ inputs.aws_region }}
+        audience: sts.amazonaws.com
+
+    - name: Login to ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Make scripts executable
+      run: |
+        chmod +x .github/scripts/infra/*.sh || true
+        chmod +x .github/scripts/applications/*.sh || true
+        chmod +x .github/scripts/shared/*.sh || true
+      shell: bash

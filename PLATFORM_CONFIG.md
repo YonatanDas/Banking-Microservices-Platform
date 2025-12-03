@@ -10,7 +10,7 @@ The platform is designed to be generic and reusable. All domain-specific values 
 
 ### 1. Terraform Configuration
 
-**Location**: `05-terraform/environments/{env}/*.tfvars`
+**Location**: `terraform/environments/{env}/*.tfvars`
 
 **Key Variables**:
 - `microservices`: List of service names (e.g., `["accounts", "cards", "loans", "gatewayserver"]`)
@@ -49,7 +49,7 @@ services:
 
 ### 3. Helm Configuration
 
-**Location**: `06-helm/environments/{env}-env/values.yaml`
+**Location**: `helm/environments/{env}-env/values.yaml`
 
 **Global Variables**:
 - `global.ecrRegistry`: ECR registry URL (computed from AWS account ID and region)
@@ -60,7 +60,7 @@ services:
 
 ### 4. GitOps Configuration
 
-**Location**: `07-gitops/config.yaml`
+**Location**: `gitops/config.yaml`
 
 **Variables**:
 - `repository_url`: Git repository URL
@@ -69,7 +69,7 @@ services:
 
 ### 5. Monitoring Configuration
 
-**Location**: `08-monitoring/prometheus-operator/values/{env}.yaml`
+**Location**: `monitoring/prometheus-operator/values/{env}.yaml`
 
 **Variables**:
 - `platformName`: Platform name for dashboards (e.g., `"Platform"`)
@@ -77,7 +77,7 @@ services:
 
 ### 6. Security Configuration
 
-**Location**: `09-kyverno/config/configmap.yaml`
+**Location**: `kyverno/config/configmap.yaml`
 
 **Variables**:
 - `allowedRegistry`: Allowed container registry pattern
@@ -86,7 +86,7 @@ services:
 
 To add a new microservice, follow these steps:
 
-1. **Add to Terraform** (`05-terraform/environments/{env}/*.tfvars`):
+1. **Add to Terraform** (`terraform/environments/{env}/*.tfvars`):
    ```hcl
    microservices = ["accounts", "cards", "loans", "new-service"]
    
@@ -111,14 +111,14 @@ To add a new microservice, follow these steps:
        port: 8080
    ```
 
-3. **Create Helm Chart** (`06-helm/bankingapp-services/new-service/`):
+3. **Create Helm Chart** (`helm/bankingapp-services/new-service/`):
    - Create `Chart.yaml` and `values.yaml`
    - Use `bankingapp-common` as a dependency
 
-4. **Add to Environment Chart** (`06-helm/environments/{env}-env/Chart.yaml`):
+4. **Add to Environment Chart** (`helm/environments/{env}-env/Chart.yaml`):
    - Add service as a dependency
 
-5. **Create GitOps Application** (`07-gitops/{env}/applications/`):
+5. **Create GitOps Application** (`gitops/{env}/applications/`):
    - Create application manifest (or use template)
 
 6. **Update Monitoring** (if needed):

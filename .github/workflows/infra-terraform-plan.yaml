@@ -1,0 +1,213 @@
+name: Terraform Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to plan'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stag
+          - prod
+
+concurrency:
+  group: terraform-plan-${{ github.ref }}-${{ github.event.inputs.environment || 'all' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+env:
+  AWS_REGION: us-east-1
+  TERRAFORM_VERSION: 1.6.0
+  TF_STATE_BUCKET: banking-terraform-state-18.10.25
+  TF_LOCK_TABLE: terraform-locks
+  AWS_ROLE: github-actions-terraform-role
+  Artifacts_S3_Bucket: my-ci-artifacts55
+  Artifacts_S3_Prefix: cloud-infrastructure
+  Artifacts_Folder: collected-artifacts
+  WORKFLOW_NAME: terraform-plan
+
+jobs:
+  detect-terraform-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      terraform-changed: ${{ steps.filter.outputs.terraform }}
+      dev-changed: ${{ steps.filter.outputs.dev }}
+      stag-changed: ${{ steps.filter.outputs.stag }}
+      prod-changed: ${{ steps.filter.outputs.prod }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            terraform:
+              - 'infra/terraform/**'
+            dev:
+              - 'infra/terraform/environments/dev/**'
+            stag:
+              - 'infra/terraform/environments/stag/**'
+            prod:
+              - 'infra/terraform/environments/prod/**'
+
+  terraform-plan-dev:
+    name: Plan Development
+    runs-on: ubuntu-latest
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.dev-changed == 'true' || github.event.inputs.environment == 'dev'
+    environment: dev
+    outputs:
+      plan-exists: ${{ steps.plan.outputs.plan-exists }}
+      resource-add: ${{ steps.summary.outputs.resource-add }}
+      resource-change: ${{ steps.summary.outputs.resource-change }}
+      resource-destroy: ${{ steps.summary.outputs.resource-destroy }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          
+      - name: Setup Terraform
+        uses: ./.github/actions/infra/terraform-setup
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          working_directory: infra/terraform/environments/dev
+
+      - name: Generate Terraform plan
+        continue-on-error: true
+        run: ./.github/scripts/infra/generate-terraform-execution-plan.sh dev 
+
+      - name: Upload plan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-dev
+          path: |
+            infra/terraform/environments/dev/tfplan-dev.txt
+            infra/terraform/environments/dev/tfplan-dev.bin
+            infra/terraform/environments/dev/tfplan-dev.json
+          retention-days: 7
+
+
+  terraform-plan-stag:
+    name: Plan Staging
+    runs-on: ubuntu-latest
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.stag-changed == 'true' || github.event.inputs.environment == 'stag'
+    environment: stag
+    outputs:
+      plan-exists: ${{ steps.plan.outputs.plan-exists }}
+      resource-add: ${{ steps.summary.outputs.resource-add }}
+      resource-change: ${{ steps.summary.outputs.resource-change }}
+      resource-destroy: ${{ steps.summary.outputs.resource-destroy }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: ./.github/actions/infra/terraform-setup
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          working_directory: infra/terraform/environments/stag
+
+      - name: Generate Terraform plan
+        continue-on-error: true
+        run: ./.github/scripts/infra/generate-terraform-execution-plan.sh stag 
+
+      - name: Upload plan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-stag
+          path: |
+            infra/terraform/environments/stag/tfplan-stag.txt
+            infra/terraform/environments/stag/tfplan-stag.bin
+            infra/terraform/environments/stag/tfplan-stag.json
+          retention-days: 7
+
+
+  terraform-plan-prod:
+    name: Plan Production
+    runs-on: ubuntu-latest
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.prod-changed == 'true' || github.event.inputs.environment == 'prod'
+    environment: prod
+    outputs:
+      plan-exists: ${{ steps.plan.outputs.plan-exists }}
+      resource-add: ${{ steps.summary.outputs.resource-add }}
+      resource-change: ${{ steps.summary.outputs.resource-change }}
+      resource-destroy: ${{ steps.summary.outputs.resource-destroy }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          
+      - name: Setup Terraform
+        uses: ./.github/actions/infra/terraform-setup
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          working_directory: infra/terraform/environments/prod
+
+      - name: Generate Terraform plan
+        continue-on-error: true
+        run: ./.github/scripts/infra/generate-terraform-execution-plan.sh prod 
+
+      - name: Upload plan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-prod
+          path: |
+            infra/terraform/environments/prod/tfplan-prod.txt
+            infra/terraform/environments/prod/tfplan-prod.bin
+            infra/terraform/environments/prod/tfplan-prod.json
+          retention-days: 7
+
+  Collect-Artifacts:
+    runs-on: ubuntu-latest
+    needs: [terraform-plan-dev, terraform-plan-stag, terraform-plan-prod]
+    if: |
+      always() &&
+      (
+        needs.terraform-plan-dev.result == 'success' ||
+        needs.terraform-plan-stag.result == 'success' ||
+        needs.terraform-plan-prod.result == 'success'
+      )
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: collected-artifacts/
+      - name: Upload to S3
+        run: ./.github/scripts/shared/upload-build-artifacts-to-s3.sh ${{ env.Artifacts_S3_Bucket}} ${{ env.Artifacts_S3_Prefix}} ${{ env.Artifacts_Folder}} ${{ env.WORKFLOW_NAME}}
+
+

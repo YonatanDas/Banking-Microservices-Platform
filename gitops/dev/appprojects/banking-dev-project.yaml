@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform-dev-project  
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  sourceRepos:
+    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'  # Update with your repository URL
+    - '*'
+  
+  destinations:
+    - namespace: default
+      server: https://kubernetes.default.svc
+    - namespace: kyverno
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+    - namespace: kube-system
+      server: https://kubernetes.default.svc  
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'apiextensions.k8s.io'
+      kind: CustomResourceDefinition
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+    - group: 'admissionregistration.k8s.io'
+      kind: '*'
+    - group: 'external-secrets.io'
+      kind: ClusterSecretStore
+    - group: 'kyverno.io'
+      kind: ClusterPolicy
+    - group: 'kyverno.io'
+      kind: Policy
+    - group: 'monitoring.coreos.com'
+      kind: PrometheusRule
+  
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: '*'
+    - group: 'apps'
+      kind: '*'
+    - group: 'autoscaling'
+      kind: '*'
+    - group: 'networking.k8s.io'
+      kind: '*'
+    - group: 'external-secrets.io'
+      kind: '*'
+    - group: 'monitoring.coreos.com'
+      kind: '*'
+    - group: 'rbac.authorization.k8s.io'
+      kind: '*'
+  
+  roles:
+    - name: dev-admin
+      description: Dev environment administrator
+      policies:
+        - p, proj:platform-dev-project:dev-admin, applications, *, platform-dev-project/*, allow
+        - p, proj:platform-dev-project:dev-admin, repositories, get, platform-dev-project/*, allow
+      groups:
+        - dev-team
+
