@@ -56,8 +56,10 @@ jobs:
       - name: Setup common tools
         run: |
           chmod +x .github/scripts/shared/*.sh
-          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh .github/platform/scripts/*.sh"
-      
+          chmod +x .github/scripts/applications/*.sh
+          chmod +x .github/platform/scripts/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh
+                
       - name: Resolve service directory
         run: |
           echo "📂 Resolving service directory..."
