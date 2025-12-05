@@ -59,6 +59,10 @@ spec:
       kind: '*'
     - group: 'policy'          
       kind: '*'
+    - group: 'karpenter.sh'              # ADD THIS - for NodePool
+      kind: '*'
+    - group: 'karpenter.k8s.aws'        # ADD THIS - for EC2NodeClass
+      kind: '*'
   
   roles:
     - name: dev-admin
