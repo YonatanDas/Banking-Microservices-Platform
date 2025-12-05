@@ -134,11 +134,11 @@ kube-prometheus-stack:
       #size: 10Gi
     resources:
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: "200m"
+        memory: "512Mi"
       limits:
-        cpu: 1          # Reduced from default 6 CPU
-        memory: 2Gi
+        cpu: "1"
+        memory: "2Gi"
     datasources:
       datasources.yaml:
         apiVersion: 1
