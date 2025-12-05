@@ -3,7 +3,7 @@ accounts:
     tag: "16"
 cards:
   image:
-    tag: "18"
+    tag: "20"
 loans:
   image:
     tag: "16"
