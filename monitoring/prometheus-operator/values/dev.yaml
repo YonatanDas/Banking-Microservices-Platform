@@ -35,6 +35,20 @@ kube-prometheus-stack:
            # resources:
            #   requests:
              #   storage: 50Gi
+             
+  prometheus-node-exporter:
+    enabled: true
+    hostNetwork: false
+    hostPID: false
+    resources:
+      requests:
+        cpu: 50m        # Reduced from default (usually 100m)
+        memory: 64Mi     # Reduced from default (usually 180Mi)
+      limits:
+        cpu: 100m        # Reduced from default (usually 200m)
+        memory: 128Mi    # Reduced from default (usually 180Mi)
+    tolerations:
+      - operator: Exists
 
   alertmanager:
     alertmanagerSpec:
