@@ -71,13 +71,14 @@ jobs:
           .github/platform/scripts/validate-service-yaml.sh "applications/${{ env.SERVICE }}/service.yaml"
           echo "✅ Service validation passed"
 
+          
+
   # -------------------------------
   # TEST
   # Run lint, tests, and generate coverage
   # -------------------------------
   Test:
     runs-on: ubuntu-latest
-    needs: Validate
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -117,7 +118,6 @@ jobs:
   # -------------------------------
   Security-Scan-FS:
     runs-on: ubuntu-latest
-    needs: Validate
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -154,7 +154,7 @@ jobs:
   # BUILD
   # Build Docker image (only if tests and security scan pass)
   # -------------------------------
-  Build:
+  Build-and-Push:
     runs-on: ubuntu-latest
     needs: [Test, Security-Scan-FS]
     timeout-minutes: 20
@@ -292,26 +292,9 @@ jobs:
             "${{ github.run_number }}"
           echo "✅ Image signed and verified successfully"
 
-  # -------------------------------
-  # COLLECT ALL ARTIFACTS AND UPLOAD TO S3
-  # -------------------------------
-  Collect-Artifacts:
-    runs-on: ubuntu-latest
-    needs: [Test, Security-Scan-FS, Build, Scan-and-Sign]
-    if: always()
-    continue-on-error: true
-    timeout-minutes: 5
-    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup AWS + ECR
-        uses: ./.github/actions/shared/env-setup
-        with:
-          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
-          aws_region: ${{ env.AWS_REGION }}
-          registry: ${{ env.REGISTRY }}
-      
+    
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -373,7 +356,7 @@ jobs:
       github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
       github.event.inputs.promote_to_stag == 'true'
-    uses: ./.github/workflows/.applications-deploy.yaml
+    uses: ./.github/workflows/_applications-deploy.yaml
     with:
       service: accounts
       environment: stag
@@ -393,7 +376,7 @@ jobs:
       github.event.inputs.promote_to_prod == 'true' &&
       github.event.inputs.promote_to_stag == 'true' &&
       needs.Promote-to-Staging.result == 'success'
-    uses: ./.github/workflows/.applications-deploy.yaml
+    uses: ./.github/workflows/_applications-deploy.yaml
     with:
       service: accounts
       environment: prod
