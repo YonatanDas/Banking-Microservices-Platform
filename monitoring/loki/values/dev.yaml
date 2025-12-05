@@ -1,7 +1,17 @@
 loki:
   auth_enabled: false
-  useTestSchema: true
   
+  # Schema config required for Loki deployments
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        object_store: s3
+        store: tsdb
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
   storage:
     type: filesystem
   
