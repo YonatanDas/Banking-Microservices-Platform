@@ -8,8 +8,8 @@ spec:
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
-    targetRevision: feature/platform-modularization
-    path: infra/karpenter 
+    targetRevision: Feature/platform-modularization
+    path: infra/karpenter/dev 
     directory:
       recurse: true 
   

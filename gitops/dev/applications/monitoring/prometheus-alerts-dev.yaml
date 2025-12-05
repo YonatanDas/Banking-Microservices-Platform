@@ -8,7 +8,7 @@ spec:
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
-    targetRevision: feature/platform-modularization
+    targetRevision: Feature/platform-modularization
     path: monitoring/prometheus-operator/alerts
   
   destination:
