@@ -12,6 +12,13 @@ if [[ -z "${SERVICE}" || -z "${IMAGE_TAG}" ]]; then
   exit 1
 fi
 
+# Validate environment parameter
+VALID_ENVIRONMENTS=("dev" "stag" "prod")
+if [[ ! " ${VALID_ENVIRONMENTS[@]} " =~ " ${ENVIRONMENT} " ]]; then
+  echo "❌ Invalid environment: ${ENVIRONMENT}. Must be one of: ${VALID_ENVIRONMENTS[*]}" >&2
+  exit 1
+fi
+
 # Map service names (gatewayserver -> gateway in values.yaml)
 case "${SERVICE}" in
   gatewayserver)
@@ -23,6 +30,12 @@ case "${SERVICE}" in
 esac
 
 TAGS_FILE="helm/environments/${ENVIRONMENT}-env/image-tags.yaml"
+
+# Verify the tags file exists
+if [ ! -f "${TAGS_FILE}" ]; then
+  echo "❌ Tags file not found: ${TAGS_FILE}" >&2
+  exit 1
+fi
 
 echo "🔄 Updating ${HELM_SERVICE}.image.tag to ${IMAGE_TAG} in ${TAGS_FILE}"
 
