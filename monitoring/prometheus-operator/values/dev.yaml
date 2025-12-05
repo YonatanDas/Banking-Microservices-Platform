@@ -27,6 +27,14 @@ kube-prometheus-stack:
           - namespace: monitoring
             name: prometheus-operator-dev-ku-alertmanager
             port: web
+      # Resource limits for Prometheus (adjusted for small nodes)
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1.5Gi"
+        limits:
+          cpu: "1500m"
+          memory: "3Gi"
       #storageSpec:
         #volumeClaimTemplate:
         #  spec:
@@ -52,9 +60,27 @@ kube-prometheus-stack:
     extraArgs:
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)  
 
+  kubeStateMetrics:
+    enabled: true
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+
   alertmanager:
     alertmanagerSpec:
       retention: 120h
+      # Resource limits for Alertmanager (adjusted for small nodes)
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "512Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
       # Alertmanager configuration
       config:
         global:

@@ -8,14 +8,14 @@ metadata:
 spec:
   limits:
     - default:
+        cpu: "1"
+        memory: 2Gi
+      defaultRequest:
+        cpu: "200m"
+        memory: 512Mi
+      max:
         cpu: "2"
         memory: 4Gi
-      defaultRequest:
-        cpu: "500m"
-        memory: 1Gi
-      max:
-        cpu: "4"
-        memory: 8Gi
       min:
         cpu: "100m"
         memory: 128Mi

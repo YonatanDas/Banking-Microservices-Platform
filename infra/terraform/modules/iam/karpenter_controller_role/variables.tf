@@ -18,3 +18,8 @@ variable "node_instance_profile_arn" {
   type        = string
 }
 
+variable "eks_cluster_arn" {
+  description = "ARN of the EKS cluster"
+  type        = string
+}
+

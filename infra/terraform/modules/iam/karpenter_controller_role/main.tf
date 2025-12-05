@@ -98,6 +98,17 @@ data "aws_iam_policy_document" "karpenter_controller_policy" {
     resources = ["*"]
   }
 
+  # EKS Cluster Access (required for Karpenter to discover cluster)
+  statement {
+    effect = "Allow"
+    actions = [
+      "eks:DescribeCluster"
+    ]
+    resources = [
+      var.eks_cluster_arn
+    ]
+  }
+
   # Tagging
   statement {
     effect = "Allow"
