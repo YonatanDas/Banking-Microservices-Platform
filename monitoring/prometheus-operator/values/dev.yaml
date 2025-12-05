@@ -49,6 +49,8 @@ kube-prometheus-stack:
         memory: 128Mi    # Reduced from default (usually 180Mi)
     tolerations:
       - operator: Exists
+    extraArgs:
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)  
 
   alertmanager:
     alertmanagerSpec:
