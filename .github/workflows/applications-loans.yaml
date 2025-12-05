@@ -254,6 +254,7 @@ jobs:
         id: image-scan
         run: |
           echo "🔍 Scanning image and generating SBOM..."
+          chmod +x .github/scripts/applications/*.sh
           ./.github/scripts/applications/generate-image-security-sbom.sh \
             "${{ env.REGISTRY }}/${{ env.SERVICE }}:${{ github.run_number }}" \
             ".ci-artifacts/Trivy-reports/${{ env.SERVICE }}/${{ github.sha }}" \
