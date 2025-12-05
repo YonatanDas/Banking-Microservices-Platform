@@ -172,7 +172,6 @@ kube-prometheus-stack:
           - name: Prometheus
             type: prometheus
             url: http://prometheus-operator-dev-ku-prometheus:9090
-            isDefault: true
           - name: Loki
             type: loki
             url: http://loki-gateway:80
