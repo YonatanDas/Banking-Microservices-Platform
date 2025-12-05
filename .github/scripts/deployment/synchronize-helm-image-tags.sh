@@ -80,7 +80,7 @@ check_tag_already_set() {
 
 # Function to apply our change
 apply_tag_update() {
-  yq eval ".${HELM_SERVICE}.image.tag = ${IMAGE_TAG}" -i "${TAGS_FILE}"
+  yq eval ".${HELM_SERVICE}.image.tag = \"${IMAGE_TAG}\"" -i "${TAGS_FILE}"
   
   # Verify the update
   if yq eval ".${HELM_SERVICE}.image.tag" "${TAGS_FILE}" | grep -q "^${IMAGE_TAG}$"; then
