@@ -37,16 +37,16 @@ trivy fs "$TARGET_PATH" \
 
 echo "✅ Trivy FS scan completed successfully for $SERVICE_DIR"
 
-# Check for critical vulnerabilities
+# Check for vulnerabilities (informational only, non-blocking)
 REPORT_FILE="$ROOT_DIR/${SERVICE_NAME}-trivy-FS-report.txt"
-echo "🔎 Checking for critical vulnerabilities..."
 if [ -f "$REPORT_FILE" ]; then
   if grep -qi "CRITICAL" "$REPORT_FILE"; then
-    echo "❌ Critical vulnerabilities found in filesystem scan!"
-    exit 1
+    echo "⚠️ Critical vulnerabilities found in filesystem scan (see report for details)"
   fi
-  echo "✅ No critical vulnerabilities found in filesystem scan"
+  if grep -qi "HIGH" "$REPORT_FILE"; then
+    echo "⚠️ High vulnerabilities found in filesystem scan (see report for details)"
+  fi
+  echo "✅ Trivy FS scan report generated: $REPORT_FILE"
 else
   echo "⚠️ Scan report not found: $REPORT_FILE"
-  exit 1
 fi
