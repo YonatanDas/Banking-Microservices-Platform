@@ -1,12 +1,12 @@
 accounts:
   image:
-    tag: "16"
+    tag: "19"
 cards:
   image:
-    tag: "18"
+    tag: "20"
 loans:
   image:
-    tag: "16"
+    tag: "18"
 gateway:
   image:
-    tag: "16"
+    tag: "18"
