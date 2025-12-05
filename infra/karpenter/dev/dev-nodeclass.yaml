@@ -11,7 +11,6 @@ spec:
   securityGroupSelectorTerms:
     - tags:
         kubernetes.io/cluster/bankingapp-dev-eks: shared
-  instanceStorePolicy: NVME
   userData: |
     #!/bin/bash
     /etc/eks/bootstrap.sh bankingapp-dev-eks
