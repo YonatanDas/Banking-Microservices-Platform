@@ -330,6 +330,7 @@ jobs:
   # -------------------------------
   Deploy-to-Dev:
     runs-on: ubuntu-latest
+    needs: Push-and-Security
     if: |
     (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/Feature/')) &&
     github.event_name == 'push'
