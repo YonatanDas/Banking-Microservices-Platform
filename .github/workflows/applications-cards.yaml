@@ -378,7 +378,7 @@ jobs:
       github.event.inputs.promote_to_prod == 'true' &&
       github.event.inputs.promote_to_stag == 'true' &&
       needs.Promote-to-Staging.result == 'success'
-    uses: ./.github/workflows/applications-deploy.yaml
+    uses: ./.github/workflows/.applications-deploy.yaml
     with:
       service: cards
       environment: prod
