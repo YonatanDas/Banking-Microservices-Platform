@@ -16,7 +16,7 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 # Get all service directories
-NEW_SERVICES=""
+NEW_SERVICES_ARRAY=()
 HAS_NEW=false
 
 for SERVICE_DIR in applications/*/; do
@@ -27,7 +27,7 @@ for SERVICE_DIR in applications/*/; do
     # Check if workflow exists
     if [ ! -f "$WORKFLOW_FILE" ]; then
       echo "🆕 New service detected: $SERVICE"
-      NEW_SERVICES="${NEW_SERVICES}${SERVICE} "
+      NEW_SERVICES_ARRAY+=("$SERVICE")
       HAS_NEW=true
     fi
   fi
@@ -36,11 +36,17 @@ done
 if [ "$HAS_NEW" = "true" ]; then
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
     echo "has_new_services=true" >> "$GITHUB_OUTPUT"
-    # Output as JSON array for matrix
-    NEW_JSON=$(echo "$NEW_SERVICES" | tr ' ' '\n' | grep -v '^$' | jq -R . | jq -s .)
-    echo "new_services=$NEW_JSON" >> "$GITHUB_OUTPUT"
+    # Convert array to JSON array directly
+    NEW_JSON=$(printf '%s\n' "${NEW_SERVICES_ARRAY[@]}" | jq -R . | jq -s .)
+    # Use delimiter format for multiline/special characters to avoid quoting issues
+    {
+      echo "new_services<<EOF"
+      echo "$NEW_JSON"
+      echo "EOF"
+    } >> "$GITHUB_OUTPUT"
   fi
-  echo "✅ Found new services: $NEW_SERVICES"
+  NEW_SERVICES_STR=$(IFS=' '; echo "${NEW_SERVICES_ARRAY[*]}")
+  echo "✅ Found new services: $NEW_SERVICES_STR"
 else
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
     echo "has_new_services=false" >> "$GITHUB_OUTPUT"

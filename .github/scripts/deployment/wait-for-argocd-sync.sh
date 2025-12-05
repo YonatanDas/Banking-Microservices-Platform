@@ -20,7 +20,7 @@ if ! command -v yq &> /dev/null; then
   chmod +x /usr/local/bin/yq
 fi
 
-CONFIG_FILE=".github/workflows/.deployment-config.yaml"
+CONFIG_FILE=".github/config/deployment-config.yaml"
 
 # Get ArgoCD config from file if available
 if [[ -f "${CONFIG_FILE}" ]]; then

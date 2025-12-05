@@ -25,7 +25,7 @@ if ! command -v jq &> /dev/null; then
   chmod +x /usr/local/bin/jq
 fi
 
-CONFIG_FILE=".github/workflows/.deployment-config.yaml"
+CONFIG_FILE=".github/config/deployment-config.yaml"
 
 # Check if metrics validation is enabled
 if [[ -f "${CONFIG_FILE}" ]]; then

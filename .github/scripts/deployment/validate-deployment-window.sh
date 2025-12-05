@@ -17,7 +17,7 @@ if ! command -v yq &> /dev/null; then
   chmod +x /usr/local/bin/yq
 fi
 
-CONFIG_FILE=".github/workflows/.deployment-config.yaml"
+CONFIG_FILE=".github/config/deployment-config.yaml"
 
 if [[ ! -f "${CONFIG_FILE}" ]]; then
   echo "⚠️  Config file not found: ${CONFIG_FILE}, using default behavior"

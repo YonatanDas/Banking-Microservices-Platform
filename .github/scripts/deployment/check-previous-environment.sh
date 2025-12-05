@@ -19,7 +19,7 @@ if ! command -v yq &> /dev/null; then
   chmod +x /usr/local/bin/yq
 fi
 
-CONFIG_FILE=".github/workflows/.deployment-config.yaml"
+CONFIG_FILE=".github/config/deployment-config.yaml"
 
 # Check if validation is enabled for this environment
 if [[ -f "${CONFIG_FILE}" ]]; then

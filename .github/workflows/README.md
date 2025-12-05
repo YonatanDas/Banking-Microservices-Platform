@@ -132,7 +132,7 @@ Edit `.github/scripts/applications/scan-filesystem-vulnerabilities.sh` or `.gith
 
 ### Modify deployment configuration
 
-Edit `.github/workflows/.deployment-config.yaml` to adjust deployment windows, service ports, timeouts, or validation rules. Deployment scripts in `.github/scripts/deployment/` read from this configuration file.
+Edit `.github/config/deployment-config.yaml` to adjust deployment windows, service ports, timeouts, or validation rules. Deployment scripts in `.github/scripts/deployment/` read from this configuration file.
 
 ### View artifacts
 
