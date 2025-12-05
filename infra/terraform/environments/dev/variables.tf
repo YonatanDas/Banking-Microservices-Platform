@@ -140,5 +140,19 @@ variable "artifacts_s3_bucket" {
   default     = "my-ci-artifacts55"
 }
 
+variable "create_eks_users" {
+  description = "Whether to create IAM users for EKS access"
+  type        = bool
+  default     = false
+}
+
+variable "eks_users" {
+  description = "Map of users to create with their group assignments. Format: { username = { groups = [\"developers\", \"viewers\"] } }"
+  type = map(object({
+    groups = list(string)
+  }))
+  default = {}
+}
+
 
 

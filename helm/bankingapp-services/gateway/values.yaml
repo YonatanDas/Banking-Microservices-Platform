@@ -1,29 +1,41 @@
 # Default values for bankingapp-services/gateway
 
+# ============================================
+# SERVICE IDENTIFICATION
+# ============================================
 deploymentName: gateway-deployment
 serviceName: gateway
 appLabel: gateway
 appName: gateway
 ecrRepositoryName: gatewayserver  # ECR repository name differs from service name
 
-serviceAccount:
-  create: true
-  name: gateway-sa
-  needsRdsAccess: false  # Gateway doesn't need database access
-
+# ============================================
+# REPLICATION
+# ============================================
 replicaCount: 2  # Recommended minimum for HA under LoadBalancer
 
-global:
-  aws:
-    region: us-east-1
-  configMapName: platform-config
-  springProfile: dev
-
+# ============================================
+# IMAGE CONFIGURATION
+# ============================================
 image:
-  repository: ""  # Computed from global.ecrRegistry and serviceName in template
-  tag: v1.0.0
+  repository: ""  # Computed from global.ecrRegistry and ecrRepositoryName
+  tag: "latest"   # Overridden by environment
   pullPolicy: IfNotPresent
-  
+
+# ============================================
+# SERVICE ENDPOINTS
+# ============================================
+servicePort: 8072
+containerPort: 8072
+
+service:
+  type: ClusterIP
+  port: 8072
+  targetPort: 8072
+
+# ============================================
+# NETWORK POLICY
+# ============================================
 networkpolicy:
   enabled: true
   allowFromServices:
@@ -39,8 +51,27 @@ networkpolicy:
     loans: 8090
     cards: 9000
   denyAllIngress: true
-  denyAllEgress: false
+  denyAllEgress: false  # Gateway needs egress for external traffic
 
+# ============================================
+# SERVICE ACCOUNT
+# ============================================
+serviceAccount:
+  create: true
+  name: gateway-sa
+  needsRdsAccess: false  # Gateway doesn't need database access
+
+# ============================================
+# INGRESS (Gateway only - external entrypoint)
+# ============================================
+ingress:
+  enabled: true
+  className: alb
+  host: "banking.yonatan.cloud"  # Will add the EKS entrypoint after terraform apply
+
+# ============================================
+# AUTOSCALING
+# ============================================
 hpa:
   enabled: true
   minReplicas: 2
@@ -48,36 +79,26 @@ hpa:
   cpu: 70
   memory: 70
 
-containerPort: 8072
-servicePort: 8072
+# ============================================
+# HEALTH PROBES
+# ============================================
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40  # Standardized to match other services
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60  # Standardized to match other services
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
 
-ingress:
-  enabled: true
-  className: alb
-  host: "banking.yonatan.cloud" #will add the EKS entrypoint after doing "terraform apply"
-  
-service:
-  type: ClusterIP  # External entrypoint
-  port: 8072
-  targetPort: 8072
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: nlb  
-
-# Feature toggles / health / tracing
-appname_enabled: true
-profile_enabled: true
-config_enabled: false
-discovery_enabled: false  
-resourceserver_enabled: false  
-otel_enabled: false
-
-# Environment variables injected into the container
-env:
-  - name: AWS_REGION
-    value: "us-east-1"
-  - name: SPRING_PROFILES_ACTIVE
-    value: "dev"
-
+# ============================================
+# RESOURCES
+# ============================================
 resources:
   requests:
     cpu: 100m
@@ -86,16 +107,7 @@ resources:
     cpu: 500m
     memory: 512Mi
 
-probes:
-  liveness:
-    path: /actuator/health/liveness
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 3
-    failureThreshold: 3
-  readiness:
-    path: /actuator/health/readiness
-    initialDelaySeconds: 10
-    periodSeconds: 5
-    timeoutSeconds: 3
-    failureThreshold: 3
+# ============================================
+# SECRETS (overridden by environment)
+# ============================================
+secretName: dev-db-credentials

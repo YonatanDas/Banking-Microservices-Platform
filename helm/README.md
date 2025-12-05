@@ -107,10 +107,56 @@ Argo CD will automatically sync the change.
 
 ### Add a new microservice
 
-1. Create `helm/bankingapp-services/<new-service>/Chart.yaml` with dependency on `bankingapp-common`
-2. Create `helm/bankingapp-services/<new-service>/values.yaml` with service-specific values
-3. Add service to `helm/environments/*-env/Chart.yaml` dependencies
-4. Add service configuration to `helm/environments/*-env/values.yaml`
+1. **Copy template**: Copy `helm/bankingapp-services/_template/values.yaml` to `helm/bankingapp-services/<new-service>/values.yaml`
+2. **Update service values**: Replace all `{placeholder}` values with actual service-specific values:
+   - Service identification (deploymentName, serviceName, appLabel, appName)
+   - Port numbers (servicePort, containerPort)
+   - Network policy (allowFromServices, allowToServices, targetPorts)
+   - Service account (if different from defaults)
+3. **Create Chart.yaml**: Create `helm/bankingapp-services/<new-service>/Chart.yaml` with dependency on `bankingapp-common`:
+   ```yaml
+   apiVersion: v2
+   name: <new-service>
+   description: A Helm chart for Kubernetes
+   type: application
+   version: 0.1.0
+   appVersion: "1.0.0"
+   dependencies:
+     - name: bankingapp-common
+       version: 0.1.0
+       repository: "file://../../bankingapp-common"
+   ```
+4. **Create templates**: Create `helm/bankingapp-services/<new-service>/templates/include-common.yaml` to include shared templates (copy from existing service)
+5. **Add to environments**: Add service to `helm/environments/*-env/Chart.yaml` dependencies
+6. **Configure environments**: Add service configuration to `helm/environments/*-env/values.yaml`
+
+### Standard values.yaml structure
+
+All service charts follow a uniform structure for consistency and maintainability. The standard structure includes:
+
+1. **Service Identification**: deploymentName, serviceName, appLabel, appName, optional ecrRepositoryName
+2. **Replication**: replicaCount
+3. **Image Configuration**: repository (computed), tag (env override), pullPolicy
+4. **Service Endpoints**: servicePort, containerPort, service definition
+5. **Network Policy**: Zero-trust networking configuration
+6. **Service Account**: Optional overrides for IRSA and RDS access
+7. **Ingress**: Gateway-only configuration
+8. **Autoscaling**: HPA configuration
+9. **Health Probes**: Standardized liveness and readiness probes
+10. **Resources**: CPU and memory requests/limits
+11. **Secrets**: Secret name (env override)
+
+**Template Reference**: See `helm/bankingapp-services/_template/values.yaml` for the complete standard structure with documentation.
+
+**Service-Specific Differences**: 
+- **Ports**: Each service has unique port numbers
+- **Network Policies**: Service-to-service communication patterns differ
+- **Gateway**: Only gateway has ingress enabled and denyAllEgress: false
+- **Service Account**: Services without RDS access set needsRdsAccess: false
+
+**Probe Timing Standardization**: All services use consistent probe timings:
+- Liveness: `periodSeconds: 40`, `initialDelaySeconds: 30`
+- Readiness: `initialDelaySeconds: 60`, `periodSeconds: 5`
 
 ### Modify shared templates
 

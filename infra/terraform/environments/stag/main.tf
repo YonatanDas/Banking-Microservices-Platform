@@ -196,6 +196,17 @@ module "karpenter_controller_role" {
 }
 
 ############################################
+# EKS IAM Users and Groups
+############################################
+module "eks_users" {
+  source = "../../modules/iam/eks_users"
+
+  eks_cluster_arn  = "arn:aws:eks:${var.aws_region}:${var.aws_account_id}:cluster/${var.cluster_name}"
+  environment      = var.environment
+  name_prefix      = var.name_prefix 
+}
+
+############################################
 # Monitoring Infrastructure
 ############################################
 module "monitoring" {

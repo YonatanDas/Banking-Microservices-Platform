@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prod-operators
+  namespace: production
+  labels:
+    rbac.bankingapp.io/binding: operator
+    rbac.bankingapp.io/scope: namespace
+    rbac.bankingapp.io/environment: production
+    rbac.bankingapp.io/managed-by: gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: namespace-developer
+subjects:
+  - kind: Group
+    name: arn:aws:iam::063630846340:group/eks-operators
+

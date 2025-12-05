@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-dashboards-dev
+  namespace: argocd
+spec:
+  project: platform-dev-project
+  
+  source:
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
+    targetRevision: feature/platform-modularization
+    path: monitoring/dashboards/dev
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    automated: null
+    syncOptions:
+      - CreateNamespace=true
+

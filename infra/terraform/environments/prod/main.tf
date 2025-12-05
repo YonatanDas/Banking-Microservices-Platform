@@ -55,6 +55,7 @@ module "eks" {
   cluster_role_arn        = module.iam_cluster_role.eks_cluster_role_arn
   alb_controller_role_arn = module.alb_controller_role.alb_controller
   node_role_arn           = module.iam_node_role.eks_node_role_arn
+
   # node group settings
   node_instance_type    = var.node_instance_type
   node_desired_capacity = var.node_desired_capacity
@@ -64,7 +65,7 @@ module "eks" {
   # Karpenter settings
   karpenter_controller_role_arn         = module.karpenter_controller_role.karpenter_controller_role_arn
   karpenter_node_instance_profile_name  = module.iam_node_role.karpenter_node_instance_profile_name
-  karpenter_replicas                    = 2
+  karpenter_replicas                    = 1
   karpenter_interruption_queue           = ""
 
 }
@@ -192,6 +193,17 @@ module "karpenter_controller_role" {
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.oidc_provider_url
   node_instance_profile_arn = module.iam_node_role.karpenter_node_instance_profile_arn
+}
+
+############################################
+# EKS IAM Users and Groups
+############################################
+module "eks_users" {
+  source = "../../modules/iam/eks_users"
+
+  eks_cluster_arn  = "arn:aws:eks:${var.aws_region}:${var.aws_account_id}:cluster/${var.cluster_name}"
+  environment      = var.environment
+  name_prefix      = var.name_prefix 
 }
 
 ############################################

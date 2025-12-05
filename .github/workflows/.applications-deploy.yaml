@@ -1,0 +1,399 @@
+name: Deploy Service to Environment
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
+      image_tag:
+        description: 'Image tag to deploy (default: latest from previous environment)'
+        required: false
+        type: string
+        default: ''
+      reason:
+        description: 'Deployment reason/change ticket'
+        required: false
+        type: string
+        default: 'Deployment via workflow_call'
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+      AWS_REGION:
+        required: false
+      ARTIFACTS_S3_BUCKET:
+        required: false
+
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - accounts
+          - cards
+          - loans
+          - gateway
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - stag
+          - prod
+      image_tag:
+        description: 'Image tag to deploy (default: latest from previous environment)'
+        required: false
+        type: string
+        default: ''
+      reason:
+        description: 'Deployment reason/change ticket (required for production)'
+        required: false
+        type: string
+        default: 'Manual deployment'
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION || 'us-east-1' }}.amazonaws.com
+  AWS_ROLE: github-actions-eks-ecr-role
+
+jobs:
+  # -------------------------------
+  # INPUT NORMALIZATION
+  # Normalizes inputs from both workflow_call and workflow_dispatch
+  # -------------------------------
+  normalize-inputs:
+    runs-on: ubuntu-latest
+    outputs:
+      service: ${{ steps.set-outputs.outputs.service }}
+      environment: ${{ steps.set-outputs.outputs.environment }}
+      image_tag: ${{ steps.set-outputs.outputs.image_tag }}
+      reason: ${{ steps.set-outputs.outputs.reason }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup script permissions
+        run: chmod +x .github/scripts/shared/*.sh
+      
+      - id: set-outputs
+        run: |
+          ./.github/scripts/shared/normalize-workflow-inputs.sh \
+            "${{ inputs.service }}" \
+            "${{ inputs.environment }}" \
+            "${{ inputs.image_tag }}" \
+            "${{ inputs.reason }}" \
+            "${{ github.event.inputs.service }}" \
+            "${{ github.event.inputs.environment }}" \
+            "${{ github.event.inputs.image_tag }}" \
+            "${{ github.event.inputs.reason }}"
+
+  # -------------------------------
+  # PRE-DEPLOYMENT VALIDATION
+  # Validates all prerequisites before deployment
+  # -------------------------------
+  pre-deployment-validation:
+    runs-on: ubuntu-latest
+    needs: normalize-inputs
+    timeout-minutes: 10
+    env:
+      SERVICE: ${{ needs.normalize-inputs.outputs.service }}
+      ENVIRONMENT: ${{ needs.normalize-inputs.outputs.environment }}
+      IMAGE_TAG: ${{ needs.normalize-inputs.outputs.image_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup common tools
+        run: |
+          chmod +x .github/scripts/shared/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/deployment/*.sh"
+      
+      - name: Resolve image tag
+        id: resolve-tag
+        run: |
+          chmod +x .github/scripts/deployment/*.sh
+          ./.github/scripts/deployment/resolve-image-tag.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}" \
+            "${{ env.IMAGE_TAG }}"
+      
+      - name: Validate deployment window
+        run: |
+          echo "🕐 Validating deployment window..."
+          ./.github/scripts/deployment/validate-deployment-window.sh "${{ env.ENVIRONMENT }}"
+      
+      - name: Check previous environment validation
+        run: |
+          echo "🔍 Checking previous environment validation..."
+          ./.github/scripts/deployment/check-previous-environment.sh \
+            "${{ env.SERVICE }}" \
+            "${{ steps.resolve-tag.outputs.image_tag }}" \
+            "${{ env.ENVIRONMENT }}"
+      
+      - name: Setup AWS credentials
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+      
+      - name: Verify image exists in ECR
+        run: |
+          echo "🔍 Verifying image exists in ECR..."
+          ./.github/scripts/deployment/verify-image-exists.sh \
+            "${{ env.REGISTRY }}" \
+            "${{ env.SERVICE }}" \
+            "${{ steps.resolve-tag.outputs.image_tag }}" \
+            "${{ env.AWS_REGION }}"
+      
+      - name: Validate image signature
+        run: |
+          echo "🔐 Validating image signature..."
+          ./.github/scripts/deployment/validate-image-signature.sh \
+            "${{ env.REGISTRY }}" \
+            "${{ env.SERVICE }}" \
+            "${{ steps.resolve-tag.outputs.image_tag }}"
+      
+      - name: Validation Summary
+        run: |
+          echo "✅ Pre-deployment validation passed"
+          echo "   Service: ${{ env.SERVICE }}"
+          echo "   Environment: ${{ env.ENVIRONMENT }}"
+          echo "   Image Tag: ${{ steps.resolve-tag.outputs.image_tag }}"
+
+  # -------------------------------
+  # DEPLOY
+  # Updates Helm values and commits (triggers ArgoCD sync)
+  # -------------------------------
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [normalize-inputs, pre-deployment-validation]
+    environment: ${{ needs.normalize-inputs.outputs.environment == 'prod' && 'production' || 'staging' }}
+    timeout-minutes: 15
+    env:
+      SERVICE: ${{ needs.normalize-inputs.outputs.service }}
+      ENVIRONMENT: ${{ needs.normalize-inputs.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup common tools
+        run: |
+          chmod +x .github/scripts/shared/*.sh .github/scripts/applications/*.sh .github/scripts/deployment/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh .github/scripts/deployment/*.sh"
+          ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
+      
+      - name: Get resolved image tag
+        id: get-tag
+        run: |
+          chmod +x .github/scripts/deployment/*.sh
+          ./.github/scripts/deployment/resolve-image-tag.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}" \
+            "${{ needs.normalize-inputs.outputs.image_tag }}"
+      
+      - name: Update Helm Image Tags and Commit
+        run: |
+          echo "🔄 Updating Helm image tags for ${{ env.ENVIRONMENT }} environment..."
+          ./.github/scripts/deployment/synchronize-helm-image-tags.sh \
+            "${{ env.SERVICE }}" \
+            "${{ steps.get-tag.outputs.image_tag }}" \
+            "${{ env.ENVIRONMENT }}"
+          echo "✅ Helm values updated and committed"
+      
+      - name: Setup kubectl for ArgoCD check
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+      
+      - name: Wait for ArgoCD Sync
+        run: |
+          echo "🔄 Waiting for ArgoCD to sync..."
+          ./.github/scripts/deployment/wait-for-argocd-sync.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}" \
+            "300"
+
+  # -------------------------------
+  # POST-DEPLOYMENT VERIFICATION
+  # Verifies deployment health and runs smoke tests
+  # -------------------------------
+  post-deployment-verification:
+    runs-on: ubuntu-latest
+    needs: [normalize-inputs, deploy]
+    timeout-minutes: 15
+    env:
+      SERVICE: ${{ needs.normalize-inputs.outputs.service }}
+      ENVIRONMENT: ${{ needs.normalize-inputs.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+      
+      - name: Setup common tools
+        run: |
+          chmod +x .github/scripts/shared/*.sh .github/scripts/deployment/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/deployment/*.sh"
+      
+      - name: Verify Deployment Health
+        run: |
+          echo "🏥 Verifying deployment health..."
+          ./.github/scripts/deployment/verify-deployment-health.sh \
+            "${{ env.SERVICE }}" \
+            "default" \
+            "300"
+      
+      - name: Run Smoke Tests
+        run: |
+          echo "🧪 Running smoke tests..."
+          ./.github/scripts/deployment/run-smoke-tests.sh \
+            "${{ env.SERVICE }}" \
+            "default" \
+            "60"
+      
+      - name: Validate Metrics
+        continue-on-error: true
+        run: |
+          echo "📊 Validating metrics..."
+          ./.github/scripts/deployment/validate-metrics.sh \
+            "${{ env.SERVICE }}" \
+            "default"
+
+  # -------------------------------
+  # CREATE DEPLOYMENT RECORD
+  # Creates audit trail for deployment
+  # -------------------------------
+  create-deployment-record:
+    runs-on: ubuntu-latest
+    needs: [normalize-inputs, deploy, post-deployment-verification]
+    if: success()
+    timeout-minutes: 5
+    env:
+      SERVICE: ${{ needs.normalize-inputs.outputs.service }}
+      ENVIRONMENT: ${{ needs.normalize-inputs.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup common tools
+        run: |
+          chmod +x .github/scripts/shared/*.sh .github/scripts/deployment/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/deployment/*.sh"
+      
+      - name: Get deployed image tag
+        id: get-deployed-tag
+        run: |
+          chmod +x .github/scripts/deployment/*.sh
+          ./.github/scripts/deployment/resolve-image-tag.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}" \
+            "${{ needs.normalize-inputs.outputs.image_tag }}"
+      
+      - name: Create Deployment Record
+        run: |
+          echo "📝 Creating deployment record..."
+          ./.github/scripts/deployment/create-deployment-record.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}" \
+            "${{ steps.get-deployed-tag.outputs.image_tag }}" \
+            "${{ github.actor }}" \
+            "${{ needs.normalize-inputs.outputs.reason }}"
+      
+      - name: Commit Deployment Record
+        run: |
+          chmod +x .github/scripts/deployment/*.sh
+          ./.github/scripts/deployment/commit-deployment-record.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}"
+
+  # -------------------------------
+  # ROLLBACK
+  # Automatic rollback on deployment failure
+  # -------------------------------
+  rollback:
+    runs-on: ubuntu-latest
+    needs: [normalize-inputs, deploy, post-deployment-verification]
+    if: failure()
+    timeout-minutes: 10
+    env:
+      SERVICE: ${{ needs.normalize-inputs.outputs.service }}
+      ENVIRONMENT: ${{ needs.normalize-inputs.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup common tools
+        run: |
+          chmod +x .github/scripts/shared/*.sh .github/scripts/deployment/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/deployment/*.sh"
+      
+      - name: Rollback Deployment
+        run: |
+          echo "⏮️  Initiating automatic rollback..."
+          ./.github/scripts/deployment/rollback-deployment.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.ENVIRONMENT }}"
+      
+      - name: Rollback Notification
+        run: |
+          echo "⚠️  DEPLOYMENT FAILED AND ROLLED BACK"
+          echo "   Service: ${{ env.SERVICE }}"
+          echo "   Environment: ${{ env.ENVIRONMENT }}"
+          echo "   Deployed by: ${{ github.actor }}"
+          echo "   Rollback completed automatically"
+          echo ""
+          echo "Please investigate the deployment failure and check logs."
+
+  # -------------------------------
+  # NOTIFICATION
+  # Send deployment notification (placeholder for Slack/email integration)
+  # -------------------------------
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy, post-deployment-verification, create-deployment-record]
+    if: always()
+    continue-on-error: true
+    timeout-minutes: 2
+    steps:
+      - name: Deployment Notification
+        run: |
+          chmod +x .github/scripts/shared/*.sh
+          ./.github/scripts/shared/send-deployment-notification.sh \
+            "${{ needs.deploy.result }}" \
+            "${{ needs.post-deployment-verification.result }}" \
+            "${{ needs.normalize-inputs.outputs.service }}" \
+            "${{ needs.normalize-inputs.outputs.environment }}" \
+            "${{ github.actor }}"

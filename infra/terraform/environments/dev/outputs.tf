@@ -71,3 +71,23 @@ output "grafana_admin_password" {
   value       = module.eks.grafana_admin_password
   sensitive   = true
 }
+
+output "eks_admins_group_arn" {
+  description = "ARN of eks-admins IAM group"
+  value       = module.eks_users.eks_admins_group_arn
+}
+
+output "eks_developers_group_arn" {
+  description = "ARN of eks-developers IAM group"
+  value       = module.eks_users.eks_developers_group_arn
+}
+
+output "eks_viewers_group_arn" {
+  description = "ARN of eks-viewers IAM group"
+  value       = module.eks_users.eks_viewers_group_arn
+}
+
+output "eks_operators_group_arn" {
+  description = "ARN of eks-operators IAM group"
+  value       = module.eks_users.eks_operators_group_arn
+}

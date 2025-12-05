@@ -30,9 +30,6 @@ networkpolicy:
   denyAllIngress: true
   denyAllEgress: true
 
-ingress:
-  fromPort: 8072
-
 hpa:
   enabled: true
   minReplicas: 2
@@ -47,11 +44,6 @@ service:
 
 # Secrets are created via ESO — service only references name
 secretName: dev-db-credentials
-
-# DB config — these vars are not used anymore since ESO handles everything
-db:
-  useAwsSecretsManager: false  # legacy toggle
-  version: "1.0.0"
 
 probes:
   liveness:

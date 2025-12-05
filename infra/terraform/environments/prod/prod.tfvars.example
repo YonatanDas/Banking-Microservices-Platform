@@ -71,3 +71,19 @@ backup_retention_period = 7
 # RECOMMENDED: true for production to prevent accidental deletion
 deletion_protection = true
 
+# EKS IAM Users and Groups
+############################################
+# OPTIONAL: Create IAM users for EKS access (default: false)
+# RECOMMENDED: false for production - manage users via IAM console or separate process
+# create_eks_users = false
+
+# OPTIONAL: Map of users to create with their group assignments
+# Format: { username = { groups = ["developers", "viewers"] } }
+# Valid groups: "admins", "developers", "viewers", "operators"
+# WARNING: Be very careful with user creation in production
+# eks_users = {
+#   "operator1" = {
+#     groups = ["operators"]
+#   }
+# }
+

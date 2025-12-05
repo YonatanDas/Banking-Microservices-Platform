@@ -62,3 +62,20 @@ backup_retention_period = 0
 # OPTIONAL: Enable deletion protection (default: false for dev)
 deletion_protection = false
 
+# EKS IAM Users and Groups
+############################################
+# OPTIONAL: Create IAM users for EKS access (default: false)
+# create_eks_users = false
+
+# OPTIONAL: Map of users to create with their group assignments
+# Format: { username = { groups = ["developers", "viewers"] } }
+# Valid groups: "admins", "developers", "viewers", "operators"
+# eks_users = {
+#   "developer1" = {
+#     groups = ["developers"]
+#   }
+#   "viewer1" = {
+#     groups = ["viewers"]
+#   }
+# }
+

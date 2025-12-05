@@ -22,6 +22,7 @@ runs:
 
     - name: Make scripts executable
       run: |
+        chmod +x .github/scripts/deployment/*.sh || true
         chmod +x .github/scripts/infra/*.sh || true
         chmod +x .github/scripts/applications/*.sh || true
         chmod +x .github/scripts/shared/*.sh || true

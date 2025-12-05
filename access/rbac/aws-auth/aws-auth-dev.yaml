@@ -1,0 +1,26 @@
+# access/aws-auth/aws-auth-dev.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::063630846340:group/eks-admins
+      username: admin:{{SessionName}}
+      groups:
+        - system:masters
+    - rolearn: arn:aws:iam::063630846340:group/eks-developers
+      username: developer:{{SessionName}}
+      groups:
+        - system:authenticated
+    - rolearn: arn:aws:iam::063630846340:group/eks-operators
+      username: operator:{{SessionName}}
+      groups:
+        - system:authenticated
+    - rolearn: arn:aws:iam::063630846340:group/eks-viewers
+      username: viewer:{{SessionName}}
+      groups:
+        - system:authenticated
+  mapUsers: |
+    []

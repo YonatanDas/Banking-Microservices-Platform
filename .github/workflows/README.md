@@ -130,6 +130,10 @@ paths:
 
 Edit `.github/scripts/applications/scan-filesystem-vulnerabilities.sh` or `.github/scripts/infra/scan-terraform-security-checkov.sh` to adjust scan severity levels or add custom policies.
 
+### Modify deployment configuration
+
+Edit `.github/workflows/.deployment-config.yaml` to adjust deployment windows, service ports, timeouts, or validation rules. Deployment scripts in `.github/scripts/deployment/` read from this configuration file.
+
 ### View artifacts
 
 All artifacts uploaded to S3 bucket `my-ci-artifacts55` under prefix `Ci-Artifacts/`. Access via AWS Console or CLI.

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Accept optional script directory patterns (defaults to common locations)
-SCRIPT_PATTERNS="${1:-.github/scripts/applications/*.sh .github/scripts/infra/*.sh .github/platform/scripts/*.sh}"
+SCRIPT_PATTERNS="${1:-.github/scripts/applications/*.sh .github/scripts/deployment/*.sh .github/scripts/infra/*.sh .github/platform/scripts/*.sh}"
 
 echo "🔧 Setting up common tools..."
 

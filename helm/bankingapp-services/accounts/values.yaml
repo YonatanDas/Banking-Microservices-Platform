@@ -44,13 +44,8 @@ service:
   port: 8080
   targetPort: 8080
 
-# Secrets are created via ESO — service only references name
+# Secrets are created by ESO — service only references name
 secretName: dev-db-credentials
-
-# DB config — these vars are not used anymore since ESO handles everything
-db:
-  useAwsSecretsManager: false  # legacy toggle
-  version: "1.0.0"
 
 probes:
   liveness:
