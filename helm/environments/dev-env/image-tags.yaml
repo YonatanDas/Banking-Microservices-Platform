@@ -9,4 +9,4 @@ loans:
     tag: "16"
 gateway:
   image:
-    tag: "16"
+    tag: "18"
