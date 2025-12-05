@@ -199,6 +199,23 @@ jobs:
             "${{ github.sha }}" \
             "${{ env.SERVICE }}" \
             "${{ github.run_number }}"
+
+      - name: Setup AWS + ECR
+        uses: ./.github/actions/shared/env-setup
+        with:
+          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
+          aws_region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+      
+      - name: Push Image to ECR
+        run: |
+          echo "🚀 Pushing image to ECR..."
+          ./.github/scripts/applications/publish-container-image.sh \
+            "${{ env.SERVICE }}" \
+            "${{ env.REGISTRY }}" \
+            "${{ env.AWS_REGION }}" \
+            "${{ github.run_number }}"
+          echo "✅ Image pushed successfully"      
       
       - name: Upload Build Info
         uses: actions/upload-artifact@v4
@@ -223,23 +240,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup AWS + ECR
-        uses: ./.github/actions/shared/env-setup
-        with:
-          aws_role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE }}
-          aws_region: ${{ env.AWS_REGION }}
-          registry: ${{ env.REGISTRY }}
-      
-      - name: Push Image to ECR
-        run: |
-          echo "🚀 Pushing image to ECR..."
-          ./.github/scripts/applications/publish-container-image.sh \
-            "${{ env.SERVICE }}" \
-            "${{ env.REGISTRY }}" \
-            "${{ env.AWS_REGION }}" \
-            "${{ github.run_number }}"
-          echo "✅ Image pushed successfully"
       
       - name: Cache Trivy database
         uses: actions/cache@v4
