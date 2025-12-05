@@ -13,5 +13,5 @@ spec:
     limits.memory: 32Gi
     persistentvolumeclaims: "5"
     pods: "30"
-    services: "15"
+    services: "25"
 
