@@ -114,7 +114,7 @@ jobs:
   # SECURITY SCAN - FILESYSTEM
   # Scan filesystem for vulnerabilities (runs in parallel with Test)
   # -------------------------------
-  Security-Scan-FS:
+  Security-Scan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -154,7 +154,7 @@ jobs:
   # -------------------------------
   Build-and-Push:
     runs-on: ubuntu-latest
-    needs: [Test, Security-Scan-FS]
+    needs: [Test, Security-Scan]
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -231,7 +231,7 @@ jobs:
   # PUSH AND SECURITY
   # Push image, scan image, generate SBOM, and sign
   # -------------------------------
-  Scan-and-Sign:
+  Security-Operations:
     runs-on: ubuntu-latest
     needs: Build-and-Push
     timeout-minutes: 15
@@ -301,6 +301,7 @@ jobs:
       - name: Upload to S3
         run: |
           echo "📤 Uploading artifacts to S3..."
+          chmod +x .github/scripts/shared/*.sh
           ./.github/scripts/shared/upload-build-artifacts-to-s3.sh \
             ${{ env.Artifacts_S3_Bucket }} \
             ${{ env.Artifacts_S3_Prefix }} \
@@ -314,7 +315,7 @@ jobs:
   # -------------------------------
   Deploy-to-Dev:
     runs-on: ubuntu-latest
-    needs: Scan-and-Sign
+    needs: Security-Operations
     if: |
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/Feature/')) &&
       github.event_name == 'push'
@@ -354,7 +355,7 @@ jobs:
       github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
       github.event.inputs.promote_to_stag == 'true'
-    uses: ./.github/workflows/_applications-deploy.yaml
+    uses: ./.github/workflows/deploy-applications.yaml
     with:
       service: gateway
       environment: stag
@@ -374,7 +375,7 @@ jobs:
       github.event.inputs.promote_to_prod == 'true' &&
       github.event.inputs.promote_to_stag == 'true' &&
       needs.Promote-to-Staging.result == 'success'
-    uses: ./.github/workflows/_applications-deploy.yaml
+    uses: ./.github/workflows/deploy-applications.yaml
     with:
       service: gateway
       environment: prod
