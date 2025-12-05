@@ -23,3 +23,7 @@ variable "eks_cluster_arn" {
   type        = string
 }
 
+variable "node_role_arn" {
+  description = "ARN of the EKS Node IAM Role"
+  type        = string
+}

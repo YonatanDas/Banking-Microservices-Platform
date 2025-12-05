@@ -44,7 +44,11 @@ data "aws_iam_policy_document" "karpenter_controller_policy" {
     effect = "Allow"
     actions = [
       "ec2:CreateLaunchTemplate",
+      "ec2:DescribeLaunchTemplates",
+      "ec2:DescribeLaunchTemplateVersions",
+      "ec2:DeleteLaunchTemplate", 
       "ec2:CreateFleet",
+      "ec2:CreateTags",
       "ec2:RunInstances",
       "ec2:DescribeInstances",
       "ec2:DescribeInstanceTypes",
@@ -108,7 +112,17 @@ data "aws_iam_policy_document" "karpenter_controller_policy" {
       var.eks_cluster_arn
     ]
   }
-
+  # IAM PassRole (for node instance profile and role)
+  statement {
+    effect = "Allow"
+    actions = [
+      "iam:PassRole"
+    ]
+    resources = [
+      var.node_instance_profile_arn,
+      var.node_role_arn
+    ]
+  }
   # Tagging
   statement {
     effect = "Allow"
@@ -117,14 +131,16 @@ data "aws_iam_policy_document" "karpenter_controller_policy" {
     ]
     resources = [
       "arn:aws:ec2:*:*:instance/*",
-      "arn:aws:ec2:*:*:launch-template/*"
+      "arn:aws:ec2:*:*:launch-template/*",
+      "arn:aws:ec2:*:*:fleet/*"
     ]
     condition {
       test     = "StringEquals"
       variable = "ec2:CreateAction"
       values = [
         "RunInstances",
-        "CreateLaunchTemplate"
+        "CreateLaunchTemplate",
+        "CreateFleet"
       ]
     }
   }

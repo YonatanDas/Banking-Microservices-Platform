@@ -187,12 +187,14 @@ module "alb_controller_role" {
 ############################################
 # Karpenter Controller IAM Role
 ############################################
+
 module "karpenter_controller_role" {
   source                    = "../../modules/iam/karpenter_controller_role"
   env                       = var.environment
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.oidc_provider_url
-  node_instance_profile_arn  = module.iam_node_role.karpenter_node_instance_profile_arn
+  node_instance_profile_arn = module.iam_node_role.karpenter_node_instance_profile_arn
+  node_role_arn             = module.iam_node_role.eks_node_role_arn  
   eks_cluster_arn           = "arn:aws:eks:${var.aws_region}:${var.aws_account_id}:cluster/${var.cluster_name}"
 }
 
