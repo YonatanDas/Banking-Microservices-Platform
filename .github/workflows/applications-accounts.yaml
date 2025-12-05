@@ -348,8 +348,10 @@ jobs:
       
       - name: Setup common tools
         run: |
-          chmod +x .github/scripts/shared/*.sh .github/scripts/applications/*.sh
-          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh"
+          chmod +x .github/scripts/deployment/*.sh 
+          chmod +x .github/scripts/shared/*.sh
+          chmod +x .github/scripts/applications/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh 
           ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
       
       - name: Update Helm Image Tags and Commit
