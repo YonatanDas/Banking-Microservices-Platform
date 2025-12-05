@@ -233,7 +233,7 @@ jobs:
   # PUSH AND SECURITY
   # Push image, scan image, generate SBOM, and sign
   # -------------------------------
-  Push-and-Security:
+  Scan-and-Sign:
     runs-on: ubuntu-latest
     needs: Build
     timeout-minutes: 15
@@ -270,7 +270,7 @@ jobs:
           ./.github/scripts/applications/generate-image-security-sbom.sh \
             "${{ env.REGISTRY }}/${{ env.SERVICE }}:${{ github.run_number }}" \
             ".ci-artifacts/Trivy-reports/${{ env.SERVICE }}/${{ github.sha }}" \
-            "true"
+            "false"
           echo "✅ Image scan completed"
       
       - name: Upload Trivy Artifacts
@@ -297,7 +297,7 @@ jobs:
   # -------------------------------
   Collect-Artifacts:
     runs-on: ubuntu-latest
-    needs: [Test, Security-Scan-FS, Build, Push-and-Security]
+    needs: [Test, Security-Scan-FS, Build, Scan-and-Sign]
     if: always()
     continue-on-error: true
     timeout-minutes: 5
@@ -333,7 +333,7 @@ jobs:
   # -------------------------------
   Deploy-to-Dev:
     runs-on: ubuntu-latest
-    needs: Push-and-Security
+    needs: Scan-and-Sign
     if: |
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/Feature/')) &&
       github.event_name == 'push'
