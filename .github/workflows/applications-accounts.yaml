@@ -235,7 +235,7 @@ jobs:
   # -------------------------------
   Scan-and-Sign:
     runs-on: ubuntu-latest
-    needs: Build
+    needs: Build-and-Push
     timeout-minutes: 15
     steps:
       - name: Checkout repository
