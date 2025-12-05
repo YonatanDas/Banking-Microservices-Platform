@@ -160,7 +160,7 @@ With GitHub Environments, deployments to `staging` and `production` require manu
 
 The workflows are configured as follows:
 
-- **Deployment workflow** (`applications-deploy.yaml`):
+- **Deployment workflow** (`.applications-deploy.yaml`):
   - Uses `environment: staging` for `stag` deployments
   - Uses `environment: production` for `prod` deployments
   - No changes needed - already configured correctly
