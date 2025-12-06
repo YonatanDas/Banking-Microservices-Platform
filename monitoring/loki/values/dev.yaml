@@ -42,8 +42,8 @@ singleBinary:
   replicas: 1
   # Explicitly disable query-scheduler in SingleBinary mode
   extraArgs:
-    -target: single-binary
-    -config.expand-env=true
+    - "-target=single-binary"
+    - "-config.expand-env=true"
 
 # Explicitly disable all distributed components
 backend:
