@@ -37,30 +37,34 @@ loki:
 # Deployment mode - must be at root level
 deploymentMode: SingleBinary
 
-# SingleBinary configuration
+# SingleBinary configuration - explicitly enable
 singleBinary:
+  enabled: true
   replicas: 1
-  # Explicitly disable query-scheduler in SingleBinary mode
   extraArgs:
     - "-target=single-binary"
     - "-config.expand-env=true"
 
-# Explicitly disable all distributed components
+# Explicitly disable all distributed components with enabled: false
 backend:
+  enabled: false
   replicas: 0
 
 read:
+  enabled: false
   replicas: 0
 
 write:
+  enabled: false
   replicas: 0
 
 # Disable query-scheduler explicitly
 queryScheduler:
-  replicas: 0
   enabled: false
+  replicas: 0
 
 canary:
+  enabled: false
   replicas: 0
 
 # Gateway configuration
