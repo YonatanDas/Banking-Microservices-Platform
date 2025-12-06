@@ -1,9 +1,8 @@
 apiVersion: v2
 name: stag-env
-description: A Helm chart for Kubernetes
+description: Staging environment for Banking App
 type: application
 version: 0.1.0
-appVersion: "1.0.0"
 
 dependencies:
   - name: bankingapp-common
@@ -12,16 +11,13 @@ dependencies:
 
   - name: accounts
     version: 0.1.0
-    repository: file://../../bankingapp-services/accounts
-    
+    repository: "file://../../bankingapp-services/accounts"
   - name: cards
     version: 0.1.0
-    repository: file://../../bankingapp-services/cards
-    
+    repository: "file://../../bankingapp-services/cards"
   - name: loans
     version: 0.1.0
-    repository: file://../../bankingapp-services/loans
-
+    repository: "file://../../bankingapp-services/loans"
   - name: gateway
     version: 0.1.0
-    repository: file://../../bankingapp-services/gateway
+    repository: "file://../../bankingapp-services/gateway"

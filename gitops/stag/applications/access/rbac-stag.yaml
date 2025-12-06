@@ -11,7 +11,7 @@ spec:
     path: access/rbac
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system  # Cluster-scoped resources are deployed here
+    namespace: kube-system  
   syncPolicy:
     automated:
       prune: true

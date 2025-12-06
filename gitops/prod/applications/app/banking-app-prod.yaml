@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-app-prod  # Generic name - change "platform" to your project prefix
+  name: platform-app-prod  
   namespace: argocd
   annotations:
     argocd-image-updater.argoproj.io/image-list: |
@@ -25,6 +25,7 @@ spec:
     helm:
       valueFiles:
         - values.yaml
+        - image-tags.yaml
   
   destination:
     server: https://kubernetes.default.svc
@@ -37,13 +38,13 @@ spec:
       - PruneLast=true
       - RespectIgnoreDifferences=true
     syncWindows:
-      # Prevent deployments during business hours (9 AM - 5 PM UTC, Monday-Friday)
+
       - kind: deny
-        schedule: '0 9 * * 1-5'  # 9 AM UTC, Mon-Fri
+        schedule: '0 9 * * 1-5'  
         duration: 8h
         applications:
           - '*'
-        manualSync: true  # Allow manual syncs even during window
+        manualSync: true  w
     retry:
       limit: 3
       backoff:
@@ -52,8 +53,28 @@ spec:
         maxDuration: 5m
   
   ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-        - /spec/replicas
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+      - /spec/replicas
+      - /status
+  - group: ''
+    kind: Secret
+    jsonPointers:
+      - /data
+      - /metadata/annotations
+  - group: ''
+    kind: ConfigMap
+    jsonPointers:
+      - /metadata/annotations
+      - /data/SPRING_PROFILES_ACTIVE
+      - /data/JAVA_TOOL_OPTIONS
+      - /data/OTEL_EXPORTER_OTLP_ENDPOINT
+      - /data/OTEL_METRICS_EXPORTER
+      - /data/OTEL_LOGS_EXPORTER
+  - group: ''
+    kind: Service
+    jsonPointers:
+      - /metadata/annotations
+      - /status
 

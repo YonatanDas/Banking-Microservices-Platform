@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-app-dev  # Generic name - change "platform" to your project prefix
+  name: platform-app-dev  
   namespace: argocd
 
 spec:
-  project: platform-dev-project  # Must match AppProject name
+  project: platform-dev-project 
   
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
-    targetRevision: Feature/platform-modularization
+    targetRevision: main
     path: helm/environments/dev-env
     helm:
       valueFiles:

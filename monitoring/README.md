@@ -1,147 +1,173 @@
 # Observability & Monitoring Stack
 
-## Purpose in this project
+Complete observability stack providing metrics, logs, and traces for the banking microservices platform. All components are deployed via Helm charts and managed by Argo CD.
 
-The monitoring stack provides metrics, logs, and traces for the banking microservices platform: **Prometheus** for metrics, **Grafana** for visualization, **Loki** for log aggregation, and **Tempo** for distributed tracing. All components are deployed via Helm charts and managed by Argo CD.
+## Monitoring Tools
 
-## Folder structure overview
+### Prometheus (Metrics)
 
-```
-monitoring/
-├── namespace.yaml                    # Monitoring namespace definition
-├── prometheus-operator/
-│   ├── Chart.yaml
-│   └── values/
-│       ├── dev.yaml                 # Dev environment Prometheus config
-│       ├── prod.yaml
-│       └── staging.yaml
-├── loki/
-│   ├── Chart.yaml
-│   ├── templates/
-│   └── values/
-│       ├── dev.yaml                 # Loki storage (S3) and retention config
-│       ├── prod.yaml
-│       └── staging.yaml
-├── promtail/
-│   ├── Chart.yaml
-│   └── values/
-│       ├── dev.yaml                 # Promtail scraping config
-│       ├── prod.yaml
-│       └── staging.yaml
-├── tempo/
-│   ├── Chart.yaml
-│   └── values/
-│       └── dev.yaml                 # Tempo trace storage config
-├── opentelemetry-collector/
-│   ├── Chart.yaml
-│   ├── config.yaml                  # Base OTLP receiver/processor config
-│   ├── config-dev.yaml              # Environment-specific pipelines
-│   ├── config-prod.yaml
-│   └── values/
-│       ├── dev.yaml
-│       ├── prod.yaml
-│       └── staging.yaml
-└── dashboards/
-    ├── dev/
-    │   ├── application-overview.yaml
-    │   └── distributed-tracing.yaml
-    ├── prod/                         # Grafana dashboard JSON files
-    └── staging/
-```
+**What It Does**: Collects and stores metrics from microservices and Kubernetes infrastructure. Scrapes metrics from Spring Boot Actuator endpoints (`/actuator/prometheus`) via ServiceMonitors.
 
-**Key entry points**: Argo CD Applications in `gitops/{env}/applications/` sync these Helm charts
+**Configuration Location**: 
+- Helm chart: `monitoring/prometheus-operator/`
+- Values per environment: `monitoring/prometheus-operator/values/{dev,prod,staging}.yaml`
+- Alerting rules: `monitoring/prometheus-operator/alerts/`
 
-## How it works / design
+**Features**:
+- ServiceMonitor CRDs for automatic service discovery
+- PrometheusRule resources for alerting
+- Environment-specific retention and storage configs
+- Integration with Alertmanager for notifications
 
-### Metrics: Prometheus Operator
+### Grafana (Dashboards & Visualization)
 
-- **Prometheus Operator**: Installed via Helm, manages Prometheus, Alertmanager, and ServiceMonitor CRDs
-- **Service scraping**: ServiceMonitors (defined in `helm/bankingapp-common/templates/_servicemonitor.tpl`) scrape `/actuator/prometheus` endpoints from Spring Boot services
-- **Multi-environment**: Separate Prometheus instances per environment (dev/staging/prod) with environment-specific retention and storage configs
-- **Grafana integration**: Grafana datasources automatically discover Prometheus instances
+![Grafana Kubernetes Dashboard](../docs/diagrams/grafana-dashboard-k8s.png)
 
-### Dashboards: Grafana
+**Configuration Location**:
+- Dashboards: `monitoring/dashboards/{dev,prod,staging}/`
+- Dashboard formats: YAML (dev) and JSON (prod/staging)
+- Datasources: Automatically configured for Prometheus, Loki, and Tempo
 
-- **Application dashboards**: Pre-configured dashboards for Spring Boot metrics (JVM, HTTP, business metrics)
-- **Distributed tracing**: Grafana Tempo datasource enables trace exploration and service dependency graphs
-- **Multi-environment**: Separate dashboard sets per environment (dev/staging/prod) with environment-specific queries
+**Dashboards**:
+- Application Overview: Service health, request rates, error rates
+- Distributed Tracing: Service dependency graphs and trace exploration
+- Kubernetes Pods: Resource usage, pod status
+- JVM Metrics: Memory, GC, thread pools
 
+### Loki (Log Aggregation)
 
-<img src="../../11-docs/diagrams/grafana-dashboard-k8s.png" alt="Grafana Dashboard" width="800" />
+**What It Does**: Centralized log aggregation system. Collects logs from all pods via Promtail and stores them in S3 for long-term retention.
 
+**Configuration Location**:
+- Helm chart: `monitoring/loki/`
+- Values per environment: `monitoring/loki/values/{dev,prod,staging}.yaml`
+- S3 backend: Configured via Terraform (`infra/terraform/modules/monitoring/`)
 
-### Logs: Loki + Promtail
+**Features**:
+- S3 backend for durable, scalable log storage
+- IRSA role for S3 access (no credentials in pods)
+- Log labeling by namespace, pod, container for efficient querying
+- Integration with Grafana for log exploration
 
-- **Loki**: Centralized log aggregation, stores logs in S3 (configured via Terraform `monitoring` module)
-- **Promtail**: DaemonSet that scrapes pod logs and forwards to Loki
-- **Log labels**: Promtail labels logs by namespace, pod, container for efficient querying
-- **S3 backend**: Loki uses S3 for durable, scalable log storage (IRSA role for S3 access)
+### Tempo (Distributed Tracing)
 
-### Traces: Tempo + OpenTelemetry Collector
+**Configuration Location**:
+- Helm chart: `monitoring/tempo/`
+- Values: `monitoring/tempo/values/dev.yaml`
+- Object storage: Configured for trace storage
 
-- **Tempo**: Distributed tracing backend, stores traces in object storage
-- **OpenTelemetry Collector**: Receives OTLP traces from microservices, processes and forwards to Tempo
-- **OTEL instrumentation**: Spring Boot services inject OpenTelemetry Java Agent (configured in Helm values) to emit traces
-- **Trace pipeline**: Services → OTEL Collector (gRPC 4317) → Tempo → Grafana visualization
+**Features**:
+- Trace storage in object storage
+- Integration with Grafana for trace visualization
+- Trace correlation with logs (via Loki) and metrics (via Prometheus)
 
+### OpenTelemetry Collector
 
-### Integration with microservices
+**Configuration Location**:
+- Helm chart: `monitoring/opentelemetry-collector/`
+- Base config: `monitoring/opentelemetry-collector/config.yaml`
+- Environment configs: `monitoring/opentelemetry-collector/config-{dev,prod,staging}.yaml`
+- Values: `monitoring/opentelemetry-collector/values/{dev,prod,staging}.yaml`
 
-- **ServiceMonitors**: Each microservice exposes a ServiceMonitor for Prometheus scraping
-- **OpenTelemetry sidecar**: Helm charts inject OTEL Java Agent as init container, configured via `values.yaml`
-- **NetworkPolicies**: Monitoring namespace allowed in NetworkPolicy egress rules for metrics/logs/traces collection
+**Features**:
+- OTLP receiver (gRPC port 4317, HTTP port 4318)
+- Trace processing and forwarding to Tempo
+- Java agent injection via Helm charts (init container downloads agent)
 
-## Key highlights
+### Promtail (Log Shipper)
 
-- **Metrics, logs, and traces**: Provides visibility into microservices health and performance
-- **GitOps-managed**: All monitoring components deployed via Argo CD with version-controlled configuration
-- **Multi-environment isolation**: Separate Prometheus/Loki/Tempo instances per environment prevent cross-environment data leakage
-- **Cost-optimized storage**: Loki uses S3 for log storage; Tempo uses object storage for traces
-- **OpenTelemetry standard**: OTEL Collector and Java Agent provide vendor-agnostic observability
-- **High availability**: Prometheus Operator provides retention policies and alerting integration
+**Configuration Location**:
+- Helm chart: `monitoring/promtail/`
+- Values per environment: `monitoring/promtail/values/{dev,prod,staging}.yaml`
 
-## How to use / extend
+**Features**:
+- Automatic log discovery from all pods
+- Labeling by namespace, pod, container
+- Efficient log forwarding to Loki
 
-### Access Grafana
+### Alertmanager
 
+**Configuration Location**:
+- Part of Prometheus Operator Helm chart
+- Alerting rules: `monitoring/prometheus-operator/alerts/`
+  - `application-alerts.yaml` - Application-specific alerts (pod crashes, high error rates)
+  - `infrastructure-alerts.yaml` - Infrastructure alerts (node issues, resource exhaustion)
+
+## How to Audit the System
+
+### View Metrics and Dashboards
+
+**Access Grafana**:
 ```bash
 kubectl port-forward -n monitoring svc/prometheus-operator-grafana 3000:80
-# Open http://localhost:3000 (default: admin/prom-operator)
+# Open http://localhost:3000
+# Default credentials: admin / prom-operator
 ```
 
-### Query Prometheus
+**Available Dashboards**:
+- Application Overview: Service health, request rates, error rates, response times
+- Distributed Tracing: Service dependency graphs, trace timelines
+- Kubernetes Pods: Resource usage (CPU, memory), pod status
+- JVM Metrics: Heap usage, GC metrics, thread pools
 
+**Query Prometheus Directly**:
 ```bash
 kubectl port-forward -n monitoring svc/prometheus-operator-kube-p-prometheus 9090:9090
 # Open http://localhost:9090
 ```
 
-### Add a new dashboard
+### Search Logs
 
-1. Create dashboard JSON in `monitoring/dashboards/{env}/`
-2. Argo CD Application `grafana-dashboards-{env}` syncs ConfigMap with dashboard
-3. Grafana auto-discovers dashboards from ConfigMap
+**Access Loki via Grafana**:
+1. Open Grafana (see above)
+2. Navigate to "Explore" → Select "Loki" datasource
+3. Query logs using LogQL:
+   - `{namespace="default"}` - All logs from default namespace
+   - `{app="accounts"}` - Logs from accounts service
+   - `{namespace="default"} |= "ERROR"` - Error logs from default namespace
 
-### Modify scraping configuration
+**Log Labels**: Logs are labeled by namespace, pod, container for efficient filtering.
 
-Edit `monitoring/prometheus-operator/values/{env}.yaml`:
-```yaml
-prometheus:
-  prometheusSpec:
-    retention: 30d
-    scrapeInterval: 30s
+### Inspect Traces
+
+**Access Tempo via Grafana**:
+1. Open Grafana → Navigate to "Explore" → Select "Tempo" datasource
+2. Search traces by:
+   - Service name
+   - Trace ID (from logs)
+   - Time range
+3. View trace timelines, service dependencies, and span details
+
+**Trace Correlation**: Traces can be correlated with logs (click trace ID in Loki to view trace in Tempo) and metrics (view service metrics during trace time range).
+
+### View Alerts
+
+**Prometheus Alerts**:
+```bash
+kubectl get prometheusrules -n monitoring
+kubectl describe prometheusrule <rule-name> -n monitoring
 ```
 
-### Add log labels
-
-Edit `monitoring/promtail/values/{env}.yaml` to add custom labels for log filtering in Grafana.
-
-### Configure trace sampling
-
-Edit `helm/environments/{env}-env/values.yaml`:
-```yaml
-global:
-  otel:
-    sampling: 0.1  # 10% trace sampling
+**Alertmanager**:
+```bash
+kubectl port-forward -n monitoring svc/prometheus-operator-kube-p-alertmanager 9093:9093
+# Open http://localhost:9093
 ```
 
+**Alert Rules**:
+- Application alerts: Pod crashes, high error rates, high latency
+- Infrastructure alerts: Node issues, resource exhaustion, Argo CD sync failures
+
+## Integration with Microservices
+
+**ServiceMonitors**: Each microservice exposes a ServiceMonitor (defined in `helm/bankingapp-common/templates/_servicemonitor.tpl`) for Prometheus scraping.
+
+**OpenTelemetry**: Java agent injected as init container in microservice pods, configured via Helm values. Traces sent to OpenTelemetry Collector.
+
+**Network Policies**: Monitoring namespace allowed in NetworkPolicy egress rules for metrics/logs/traces collection.
+
+## Multi-Environment Isolation
+
+**Separate Instances**: Each environment (dev/staging/prod) has its own Prometheus, Loki, and Tempo instances, preventing cross-environment data leakage.
+
+**Environment-Specific Configs**: All monitoring components have environment-specific Helm values for retention, storage, and resource limits.

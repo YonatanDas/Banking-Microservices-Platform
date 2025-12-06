@@ -1,0 +1,13 @@
+accounts:
+  image:
+    tag: "latest"
+cards:
+  image:
+    tag: "latest"
+loans:
+  image:
+    tag: "latest"
+gateway:
+  image:
+    tag: "latest"
+

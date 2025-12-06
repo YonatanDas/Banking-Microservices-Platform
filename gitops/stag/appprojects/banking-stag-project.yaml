@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: platform-stag-project  # Generic name - change "platform" to your project prefix
+  name: platform-stag-project  
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   sourceRepos:
-    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'  # Update with your repository URL
+    - 'https://github.com/YonatanDas/Banking-Microservices-Platform.git'  
     - '*'
   
   destinations:

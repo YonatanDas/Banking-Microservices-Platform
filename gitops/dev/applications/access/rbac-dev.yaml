@@ -7,7 +7,7 @@ spec:
   project: platform-dev-project
   source:
     repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
-    targetRevision: feature/platform-modularization
+    targetRevision: main
     path: access/rbac
   destination:
     server: https://kubernetes.default.svc

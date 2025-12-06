@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [ "main", "Feature/platform-modularization" ]
+    branches: [ "main" ]
     paths:
       - "applications/loans/**"
   pull_request:

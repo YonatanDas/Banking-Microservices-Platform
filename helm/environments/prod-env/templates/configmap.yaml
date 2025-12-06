@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMapName | default "bankingapp-config" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.global.springProfile }}
+  JAVA_TOOL_OPTIONS: {{ .Values.global.javaToolOptions }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.global.otelExporterEndpoint }}
+  OTEL_METRICS_EXPORTER: {{ .Values.global.otelMetricsExporter }}
+  OTEL_LOGS_EXPORTER: {{ .Values.global.otelLogsExporter }}
+
