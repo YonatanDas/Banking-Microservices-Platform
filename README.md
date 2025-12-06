@@ -262,3 +262,12 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 - ✅ Automated CI/CD (GitHub Actions with OIDC, scanning, signing)
 - ✅ Resource management (HPA, ResourceQuota, LimitRange, PDBs)
 - ✅ High availability (multi-AZ, PodDisruptionBudgets)
+
+
+---
+
+## Acknowledgments
+
+This project is based on the source code from [eazybytes/microservices](https://github.com/eazybytes/microservices), a comprehensive microservices example repository demonstrating Spring Boot microservices with Docker and Kubernetes.
+
+The original repository is licensed under the Apache-2.0 license. This project extends the original codebase with multi-environment AWS EKS deployment, GitOps automation, enhanced security controls, and comprehensive observability.
