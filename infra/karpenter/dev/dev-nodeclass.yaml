@@ -9,7 +9,7 @@ spec:
     - tags:
         karpenter.sh/discovery: bankingapp-dev-eks
   securityGroupSelectorTerms:
-    - id: "sg-0106c42a1a757b17e"
+    - id: "sg-016292f01cdf0558f"
     - tags:
         kubernetes.io/cluster/bankingapp-dev-eks: shared
   userData: |
