@@ -20,6 +20,26 @@ data:
           insecure: false
           s3forcepathstyle: false
     
+    # Memberlist configuration for single-binary mode
+    memberlist:
+      join_members: []
+      bind_port: 7946
+      advertise_port: 7946
+    
+    # Ring configuration - use memberlist instead of Consul
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: memberlist
+          replication_factor: 1
+    
+    # Query scheduler ring - use memberlist
+    query_scheduler:
+      ring:
+        kvstore:
+          store: memberlist
+    
     schema_config:
       configs:
         - from: "2024-01-01"
