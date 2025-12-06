@@ -3,13 +3,13 @@
 Production-ready cloud-native platform deploying banking microservices (accounts, cards, loans, gateway) across dev, staging, and production environments on AWS EKS with GitOps automation, security controls, and full observability.
 
 ## Badges
-
-[![CI Status](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/application-accounts.yaml/badge.svg?branch=main)](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml)
 ![Terraform](https://img.shields.io/badge/Terraform-1.6+-623CE4?style=flat-square&logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazon-aws&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
 ![Argo CD](https://img.shields.io/badge/Argo%20CD-Latest-EF7B4D?style=flat-square&logo=argo&logoColor=white)
 ![Karpenter](https://img.shields.io/badge/Karpenter-Latest-FF6B35?style=flat-square&logo=kubernetes&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C?style=flat-square&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?style=flat-square&logo=grafana&logoColor=white)
 ![Trivy](https://img.shields.io/badge/Trivy-Security%20Scan-1904DA?style=flat-square&logo=aqua-security&logoColor=white) 
 
 ## High-Level Architecture
@@ -17,7 +17,7 @@ Production-ready cloud-native platform deploying banking microservices (accounts
 **Architecture Transformation**:
 
 *Before: Docker Compose on single host*
-<img src="docs/diagrams/before-diagram.png" alt="Legacy Architecture" width="400">
+<img src="docs/diagrams/before-diagram.png" alt="Legacy Architecture" width="500">
 
 *After: Multi-environment EKS platform with GitOps*
 <img src="docs/diagrams/after-diagram.png" alt="Platform Architecture" width="500">
