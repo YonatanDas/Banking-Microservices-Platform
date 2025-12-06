@@ -31,7 +31,7 @@ loki:
 
   persistence:
     enabled: true
-    size: 30Gi  # Smaller than staging (50Gi) and prod (100Gi) for dev
+    size: 30Gi
     storageClassName: gp3
 
 # Deployment mode - must be at root level
@@ -40,6 +40,10 @@ deploymentMode: SingleBinary
 # SingleBinary configuration
 singleBinary:
   replicas: 1
+  # Explicitly disable query-scheduler in SingleBinary mode
+  extraArgs:
+    -target: single-binary
+    -config.expand-env=true
 
 # Explicitly disable all distributed components
 backend:
@@ -50,6 +54,11 @@ read:
 
 write:
   replicas: 0
+
+# Disable query-scheduler explicitly
+queryScheduler:
+  replicas: 0
+  enabled: false
 
 canary:
   replicas: 0
