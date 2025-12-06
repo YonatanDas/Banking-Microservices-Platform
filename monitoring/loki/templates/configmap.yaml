@@ -40,6 +40,18 @@ data:
         kvstore:
           store: memberlist
     
+    # Distributor ring - use memberlist
+    distributor:
+      ring:
+        kvstore:
+          store: memberlist
+    
+    # Compactor ring - use memberlist
+    compactor:
+      ring:
+        kvstore:
+          store: memberlist
+    
     schema_config:
       configs:
         - from: "2024-01-01"
