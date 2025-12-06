@@ -4,14 +4,32 @@ Production-ready cloud-native platform deploying banking microservices (accounts
 
 ## Badges
 
-[![CI Status](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml/badge.svg?branch=main)](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml)
+[![CI Status](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/application-accounts.yaml/badge.svg?branch=main)](https://github.com/YonatanDas/Banking-Microservices-Platform/actions/workflows/Microservice-Ci.yaml)
 ![Terraform](https://img.shields.io/badge/Terraform-1.6+-623CE4?style=flat-square&logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazon-aws&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
 ![Argo CD](https://img.shields.io/badge/Argo%20CD-Latest-EF7B4D?style=flat-square&logo=argo&logoColor=white)
+![Karpenter](https://img.shields.io/badge/Karpenter-Latest-FF6B35?style=flat-square&logo=kubernetes&logoColor=white)
+![Trivy](https://img.shields.io/badge/Trivy-Security%20Scan-1904DA?style=flat-square&logo=aqua-security&logoColor=white) 
 
-**Security Scanning**: Trivy (containers), Checkov/tfsec (Terraform)  
-**Image Signing**: Cosign  
+## High-Level Architecture
+
+**Architecture Transformation**:
+
+*Before: Docker Compose on single host*
+<img src="docs/diagrams/before-diagram.png" alt="Legacy Architecture" width="400">
+
+*After: Multi-environment EKS platform with GitOps*
+<img src="docs/diagrams/after-diagram.png" alt="Platform Architecture" width="400">
+
+
+**Microservices Architecture**: Four Spring Boot microservices (accounts, cards, loans, gateway) deployed independently with service-per-chart Helm pattern.
+
+**Deployment Model**: GitOps-driven deployments via Argo CD. Helm charts define application manifests, Argo CD syncs from Git to Kubernetes clusters. CI/CD pipelines build, scan, sign, and push container images to ECR.
+
+**Environment Separation**: Three isolated EKS clusters (dev, staging, production) with separate Terraform state files, Argo CD projects, and monitoring stacks. Each environment has its own VPC, RDS instance, and ECR repositories.
+
+**Infrastructure as Code**: Terraform modules provision all AWS resources (VPC, EKS, RDS, ECR, IAM). Remote state stored in S3 with DynamoDB locking per environment.
 
 ## Tech Stack
 
@@ -43,24 +61,6 @@ Production-ready cloud-native platform deploying banking microservices (accounts
 - **External Secrets Operator**: AWS Secrets Manager integration
 - **Kyverno**: Policy-as-code enforcement (network policies, security contexts)
 - **IRSA**: IAM Roles for Service Accounts (no long-lived credentials)
-
-## High-Level Architecture
-
-**Architecture Transformation**:
-
-![Legacy Architecture](docs/diagrams/before-diagram.png)
-*Before: Docker Compose on single host*
-
-![Platform Architecture](docs/diagrams/after-diagram.png)
-*After: Multi-environment EKS platform with GitOps*
-
-**Microservices Architecture**: Four Spring Boot microservices (accounts, cards, loans, gateway) deployed independently with service-per-chart Helm pattern.
-
-**Deployment Model**: GitOps-driven deployments via Argo CD. Helm charts define application manifests, Argo CD syncs from Git to Kubernetes clusters. CI/CD pipelines build, scan, sign, and push container images to ECR.
-
-**Environment Separation**: Three isolated EKS clusters (dev, staging, production) with separate Terraform state files, Argo CD projects, and monitoring stacks. Each environment has its own VPC, RDS instance, and ECR repositories.
-
-**Infrastructure as Code**: Terraform modules provision all AWS resources (VPC, EKS, RDS, ECR, IAM). Remote state stored in S3 with DynamoDB locking per environment.
 
 ## Folder Structure
 
