@@ -27,6 +27,7 @@ data:
       advertise_port: 7946
     
     # Ring configuration - use memberlist instead of Consul
+    # Only ingester needs explicit ring configuration
     ingester:
       lifecycler:
         ring:
@@ -34,23 +35,19 @@ data:
             store: memberlist
           replication_factor: 1
     
-    # Query scheduler ring - use memberlist
+    # Query scheduler - no ring field needed
     query_scheduler:
-      ring:
-        kvstore:
-          store: memberlist
+      max_outstanding_requests_per_tenant: 2048
     
-    # Distributor ring - use memberlist
+    # Distributor - no ring field needed for single-binary
     distributor:
-      ring:
-        kvstore:
-          store: memberlist
+      pool:
+        health_check_ingesters: true
     
-    # Compactor ring - use memberlist
+    # Compactor - no ring field needed for single-binary
     compactor:
-      ring:
-        kvstore:
-          store: memberlist
+      working_directory: /var/loki/compactor
+      shared_store: s3
     
     schema_config:
       configs:
