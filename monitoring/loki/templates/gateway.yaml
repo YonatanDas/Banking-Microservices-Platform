@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki-gateway
+  namespace: monitoring
+  labels:
+    app: loki-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki-gateway
+  template:
+    metadata:
+      labels:
+        app: loki-gateway
+    spec:
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:1.23-alpine
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: loki-gateway-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-gateway-config
+  namespace: monitoring
+data:
+  nginx.conf: |
+    worker_processes 1;
+    events {
+      worker_connections 1024;
+    }
+    http {
+      upstream loki {
+        server loki:3100;
+      }
+      server {
+        listen 8080;
+        location / {
+          proxy_pass http://loki;
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-gateway
+  namespace: monitoring
+  labels:
+    app: loki-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: loki-gateway

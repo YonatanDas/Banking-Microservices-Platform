@@ -1,11 +1,7 @@
 apiVersion: v2
 name: loki
-description: Wrapper chart for Loki
+description: Minimal Loki SingleBinary deployment
 type: application
 version: 0.1.0
 
-dependencies:
-  - name: loki
-    version: 5.15.0
-    repository: https://grafana.github.io/helm-charts
 
