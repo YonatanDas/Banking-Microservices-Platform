@@ -2,6 +2,10 @@ loki:
   auth_enabled: false
   generatedConfigObjectName: ""
   
+  # Add replication_factor for SingleBinary
+  commonConfig:
+    replication_factor: 1
+  
   schemaConfig:
     configs:
       - from: "2024-01-01"
@@ -34,46 +38,31 @@ loki:
     size: 30Gi
     storageClassName: gp3
 
-# Deployment mode - must be at root level
+# Deployment mode
 deploymentMode: SingleBinary
 
-# SingleBinary configuration - explicitly enable
+# SingleBinary configuration
 singleBinary:
-  enabled: true
   replicas: 1
   extraArgs:
     - "-target=single-binary"
     - "-config.expand-env=true"
 
-# Explicitly disable all distributed components with enabled: false
-backend:
-  enabled: false
-  replicas: 0
+# Try completely OMITTING these sections instead of setting replicas: 0
+# The chart might be checking for existence, not replica count
+# backend:
+# read:
+# write:
+# queryScheduler:
+# canary:
 
-read:
-  enabled: false
-  replicas: 0
-
-write:
-  enabled: false
-  replicas: 0
-
-# Disable query-scheduler explicitly
-queryScheduler:
-  enabled: false
-  replicas: 0
-
-canary:
-  enabled: false
-  replicas: 0
-
-# Gateway configuration
+# Gateway
 gateway:
   enabled: true
   replicas: 1
   service:
     type: ClusterIP
 
-# Disable Grafana Agent (if not needed) to save pod quota
+# Disable Grafana Agent
 grafana-agent:
   enabled: false
