@@ -20,7 +20,7 @@ Production-ready cloud-native platform deploying banking microservices (accounts
 <img src="docs/diagrams/before-diagram.png" alt="Legacy Architecture" width="400">
 
 *After: Multi-environment EKS platform with GitOps*
-<img src="docs/diagrams/after-diagram.png" alt="Platform Architecture" width="400">
+<img src="docs/diagrams/after-diagram.png" alt="Platform Architecture" width="500">
 
 
 **Microservices Architecture**: Four Spring Boot microservices (accounts, cards, loans, gateway) deployed independently with service-per-chart Helm pattern.
