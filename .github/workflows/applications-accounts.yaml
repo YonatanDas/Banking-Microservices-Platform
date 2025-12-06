@@ -41,41 +41,8 @@ env:
 
 jobs:
   # -------------------------------
-  # VALIDATE
-  # Fast validation to fail early
-  # -------------------------------
-  Validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup common tools
-        run: |
-          chmod +x .github/scripts/shared/*.sh
-          chmod +x .github/scripts/applications/*.sh
-          chmod +x .github/platform/scripts/*.sh
-          ./.github/scripts/shared/setup-common-tools.sh
-                
-      - name: Resolve service directory
-        run: |
-          echo "📂 Resolving service directory..."
-          ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
-      
-      - name: Validate service.yaml
-        run: |
-          echo "✅ Validating service.yaml..."
-          .github/platform/scripts/validate-service-yaml.sh "applications/${{ env.SERVICE }}/service.yaml"
-          echo "✅ Service validation passed"
-
-          
-
-  # -------------------------------
   # TEST
-  # Run lint, tests, and generate coverage
+  # Run Validate,lint, tests, and generate coverage
   # -------------------------------
   Test:
     runs-on: ubuntu-latest
@@ -89,7 +56,18 @@ jobs:
           chmod +x .github/scripts/shared/*.sh .github/scripts/applications/*.sh
           ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh"
           ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
+
+      - name: Resolve service directory
+        run: |
+          echo "📂 Resolving service directory..."
+          ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
       
+      - name: Validate service.yaml
+        run: |
+          echo "✅ Validating service.yaml..."
+          .github/platform/scripts/validate-service-yaml.sh "applications/${{ env.SERVICE }}/service.yaml"
+          echo "✅ Service validation passed"
+
       - name: Install JDK 21
         uses: actions/setup-java@v4
         with:

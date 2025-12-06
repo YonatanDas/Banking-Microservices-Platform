@@ -42,7 +42,7 @@ env:
 jobs:
   # -------------------------------
   # TEST
-  # Run lint, tests, and generate coverage
+  # Run Validate,lint, tests, and generate coverage
   # -------------------------------
   Test:
     runs-on: ubuntu-latest
@@ -53,11 +53,10 @@ jobs:
       
       - name: Setup common tools
         run: |
-          chmod +x .github/scripts/shared/*.sh
-          chmod +x .github/scripts/applications/*.sh
-          chmod +x .github/platform/scripts/*.sh
-          ./.github/scripts/shared/setup-common-tools.sh
-      
+          chmod +x .github/scripts/shared/*.sh .github/scripts/applications/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh"
+          ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
+
       - name: Resolve service directory
         run: |
           echo "📂 Resolving service directory..."
