@@ -50,6 +50,43 @@ resource "aws_eks_node_group" "default" {
 }
 
 
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name             = var.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  addon_version            = "v1.32.0-eksbuild.1"  # Use latest version
+  service_account_role_arn = aws_iam_role.ebs_csi_driver.arn
+  
+  tags = {
+    Environment = var.environment
+  }
+}
 
+
+# IAM role for EBS CSI driver (IRSA)
+resource "aws_iam_role" "ebs_csi_driver" {
+  name = "${var.cluster_name}-ebs-csi-driver-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn  # Changed from .this to .eks
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"  # Changed from .this to .eks
+          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:aud" = "sts.amazonaws.com"  # Changed from .this to .eks
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
+  role       = aws_iam_role.ebs_csi_driver.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
 
 
