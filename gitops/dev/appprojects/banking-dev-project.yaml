@@ -63,6 +63,8 @@ spec:
       kind: '*'
     - group: 'policy'          
       kind: '*'
+    - group: 'monitoring.grafana.com'  
+      kind: '*'  
 
   
   roles:

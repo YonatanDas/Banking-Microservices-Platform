@@ -34,11 +34,33 @@ loki:
     size: 30Gi  # Smaller than staging (50Gi) and prod (100Gi) for dev
     storageClassName: gp3
 
+# Deployment mode - must be at root level
 deploymentMode: SingleBinary
 
+# SingleBinary configuration
 singleBinary:
   replicas: 1
 
+# Explicitly disable all distributed components
+backend:
+  replicas: 0
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+canary:
+  replicas: 0
+
+# Gateway configuration
 gateway:
+  enabled: true
+  replicas: 1
   service:
     type: ClusterIP
+
+# Disable Grafana Agent (if not needed) to save pod quota
+grafana-agent:
+  enabled: false
