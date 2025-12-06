@@ -1,0 +1,113 @@
+# Default values for bankingapp-services/gateway
+
+# ============================================
+# SERVICE IDENTIFICATION
+# ============================================
+deploymentName: gateway-deployment
+serviceName: gateway
+appLabel: gateway
+appName: gateway
+ecrRepositoryName: gatewayserver  # ECR repository name differs from service name
+
+# ============================================
+# REPLICATION
+# ============================================
+replicaCount: 2  # Recommended minimum for HA under LoadBalancer
+
+# ============================================
+# IMAGE CONFIGURATION
+# ============================================
+image:
+  repository: ""  # Computed from global.ecrRegistry and ecrRepositoryName
+  tag: "latest"   # Overridden by environment
+  pullPolicy: IfNotPresent
+
+# ============================================
+# SERVICE ENDPOINTS
+# ============================================
+servicePort: 8072
+containerPort: 8072
+
+service:
+  type: ClusterIP
+  port: 8072
+  targetPort: 8072
+
+# ============================================
+# NETWORK POLICY
+# ============================================
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+    - accounts
+  allowToServices:
+    - cards
+    - loans
+    - accounts
+  targetPorts:
+    accounts: 8080
+    loans: 8090
+    cards: 9000
+  denyAllIngress: true
+  denyAllEgress: false  # Gateway needs egress for external traffic
+
+# ============================================
+# SERVICE ACCOUNT
+# ============================================
+serviceAccount:
+  create: true
+  name: gateway-sa
+  needsRdsAccess: false  # Gateway doesn't need database access
+
+# ============================================
+# INGRESS (Gateway only - external entrypoint)
+# ============================================
+ingress:
+  enabled: true
+  className: alb
+  host: "banking.yonatan.cloud"  # Will add the EKS entrypoint after terraform apply
+
+# ============================================
+# AUTOSCALING
+# ============================================
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
+# ============================================
+# HEALTH PROBES
+# ============================================
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40  # Standardized to match other services
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60  # Standardized to match other services
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ============================================
+# RESOURCES
+# ============================================
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# ============================================
+# SECRETS (overridden by environment)
+# ============================================
+secretName: dev-db-credentials

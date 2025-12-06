@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: stag-developers
+  namespace: staging
+  labels:
+    rbac.bankingapp.io/binding: viewer
+    rbac.bankingapp.io/scope: namespace
+    rbac.bankingapp.io/environment: staging
+    rbac.bankingapp.io/managed-by: gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: namespace-viewer
+subjects:
+  - kind: Group
+    name: arn:aws:iam::063630846340:group/eks-developers
+

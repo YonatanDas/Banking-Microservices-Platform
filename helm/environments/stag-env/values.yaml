@@ -1,0 +1,85 @@
+global:
+  environment: stag
+  aws:
+    region: us-east-1
+  awsAccountId: "063630846340"
+  ecrRegistry: "063630846340.dkr.ecr.us-east-1.amazonaws.com"
+  configMapName: "platform-config"
+  springProfile: stag
+  javaToolOptions: ""
+  otelExporterEndpoint: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  otelMetricsExporter: otlp
+  otelLogsExporter: none
+  
+  eso:
+    enabled: true
+    namespace: default
+    secretStoreName: aws-secret-store
+    service: SecretsManager
+    installCRDs: true
+  
+configMapName: platform-config
+
+# Per-service overrides
+accounts:
+  serviceAccount:
+    name: accounts-sa
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
+  image:
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+cards:
+  serviceAccount:
+    name: cards-sa
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
+  image:
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+loans:
+  serviceAccount:
+    name: loans-sa
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
+  image:
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+gateway:
+  serviceAccount:
+    create: true
+    name: gateway-sa
+    needsRdsAccess: false  # Gateway doesn't need database access
+  image:
+    tag: v1.0.0
+  replicaCount: 1
+  secretName: stag-db-credentials
+  service:
+    type: LoadBalancer
+  
+  monitoring: 
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"

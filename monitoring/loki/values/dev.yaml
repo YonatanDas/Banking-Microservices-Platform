@@ -1,0 +1,68 @@
+loki:
+  auth_enabled: false
+  generatedConfigObjectName: ""
+  
+  # Add replication_factor for SingleBinary
+  commonConfig:
+    replication_factor: 1
+  
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: boltdb-shipper
+        object_store: s3
+        schema: v11
+        index:
+          prefix: loki_index_
+          period: 24h
+  
+  storage:
+    type: s3
+    bucketNames:
+      loki: dev-loki-storage-063630846340
+    s3:
+      endpoint: s3.us-east-1.amazonaws.com
+      region: us-east-1
+      s3ForcePathStyle: false
+      secretAccessKey: ""
+      accessKeyId: ""
+
+  serviceAccount:
+    create: true
+    name: loki
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::063630846340:role/dev-loki-s3-access-role
+
+  persistence:
+    enabled: true
+    size: 30Gi
+    storageClassName: gp3
+
+# Deployment mode
+deploymentMode: SingleBinary
+
+# SingleBinary configuration
+singleBinary:
+  replicas: 1
+  extraArgs:
+    - "-target=single-binary"
+    - "-config.expand-env=true"
+
+# Try completely OMITTING these sections instead of setting replicas: 0
+# The chart might be checking for existence, not replica count
+# backend:
+# read:
+# write:
+# queryScheduler:
+# canary:
+
+# Gateway
+gateway:
+  enabled: true
+  replicas: 1
+  service:
+    type: ClusterIP
+
+# Disable Grafana Agent
+grafana-agent:
+  enabled: false

@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-viewer
+  labels:
+    rbac.bankingapp.io/role: viewer
+    rbac.bankingapp.io/scope: cluster
+    rbac.bankingapp.io/managed-by: gitops
+rules:
+  # Read-only access to all resources
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  
+  # Can view pod logs
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+

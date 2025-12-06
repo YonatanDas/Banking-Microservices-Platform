@@ -1,0 +1,84 @@
+global:
+  environment: dev
+  aws:
+    region: us-east-1
+  awsAccountId: "063630846340"
+  ecrRegistry: "063630846340.dkr.ecr.us-east-1.amazonaws.com"
+  configMapName: "platform-config"
+  springProfile: dev
+  javaToolOptions: ""
+  otelExporterEndpoint: "http://opentelemetry-collector-dev.monitoring.svc.cluster.local:4317"
+  otelMetricsExporter: otlp
+  otelLogsExporter: none
+  
+  eso:
+    enabled: true
+    namespace: default
+    secretStoreName: aws-secret-store
+    service: SecretsManager
+    installCRDs: true
+  
+configMapName: platform-config
+
+# Per-service overrides
+accounts:
+  serviceAccount:
+    create: true
+    name: accounts-sa
+
+  replicaCount: 1
+  secretName: dev-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+cards:
+  serviceAccount:
+    create: true
+    name: cards-sa
+    
+
+  replicaCount: 1
+  secretName: dev-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+loans:
+  serviceAccount:
+    create: true
+    name: loans-sa
+    # IAM role ARN computed in template from global.awsAccountId and global.environment
+
+  replicaCount: 1
+  secretName: dev-db-credentials
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"
+
+gateway:
+  ecrRepositoryName: gateway
+  serviceAccount:
+    create: true
+    name: gateway-sa
+    needsRdsAccess: false  # Gateway doesn't need database access
+
+  replicaCount: 1
+  secretName: dev-db-credentials
+  service:
+    type: ClusterIP
+  
+  monitoring:
+    enabled: true
+    otel:
+      enabled: true
+      agentVersion: "1.32.0"

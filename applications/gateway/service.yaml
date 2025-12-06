@@ -1,0 +1,89 @@
+metadata:
+  name: gateway
+  description: API Gateway microservice
+
+container:
+  port: 8072
+  imageRepository: gatewayserver
+
+replicas:
+  default: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPU: 70
+  targetMemory: 70
+
+service:
+  type: ClusterIP
+  port: 8072
+
+ingress:
+  enabled: true
+  host: banking.yonatan.cloud
+  path: /
+  className: alb
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+
+networkPolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+    - accounts
+  allowToServices:
+    - cards
+    - loans
+    - accounts
+  targetPorts:
+    accounts: 8080
+    loans: 8090
+    cards: 9000
+  denyAllIngress: true
+  denyAllEgress: false
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+environment:
+  variables:
+    - name: AWS_REGION
+      value: us-east-1
+    - name: SPRING_PROFILES_ACTIVE
+      value: dev
+  secrets:
+    - name: dev-db-credentials
+      optional: false
+
+serviceAccount:
+  create: true
+  name: gateway-sa
+  annotations: {}
+
+monitoring:
+  otelEnabled: false
+  serviceMonitorEnabled: true
+
+

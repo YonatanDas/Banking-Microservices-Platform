@@ -1,0 +1,24 @@
+apiVersion: v2
+name: prod-env
+description: Production environment for Banking App
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: bankingapp-common
+    version: 0.1.0
+    repository: file://../../bankingapp-common
+
+  - name: accounts
+    version: 0.1.0
+    repository: "file://../../bankingapp-services/accounts"
+  - name: cards
+    version: 0.1.0
+    repository: "file://../../bankingapp-services/cards"
+  - name: loans
+    version: 0.1.0
+    repository: "file://../../bankingapp-services/loans"
+  - name: gateway
+    version: 0.1.0
+    repository: "file://../../bankingapp-services/gateway"
+

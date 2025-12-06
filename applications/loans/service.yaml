@@ -1,0 +1,81 @@
+metadata:
+  name: loans
+  description: Loans microservice
+
+container:
+  port: 8090
+  imageRepository: loans
+
+replicas:
+  default: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPU: 70
+  targetMemory: 70
+
+service:
+  type: ClusterIP
+  port: 8090
+
+ingress:
+  enabled: false
+  host: ""
+  path: /
+  className: ""
+  annotations: {}
+
+networkPolicy:
+  enabled: true
+  allowFromServices:
+    - accounts
+    - cards
+  allowToServices:
+    - accounts
+    - cards
+  targetPorts:
+    accounts: 8080
+    cards: 9000
+  denyAllIngress: true
+  denyAllEgress: true
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+environment:
+  variables: []
+  secrets:
+    - name: dev-db-credentials
+      optional: false
+
+serviceAccount:
+  create: true
+  name: loans-sa
+  annotations: {}
+
+monitoring:
+  otelEnabled: true
+  serviceMonitorEnabled: true
+
+

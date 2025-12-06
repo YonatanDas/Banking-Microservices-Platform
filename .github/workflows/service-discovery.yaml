@@ -1,0 +1,85 @@
+name: Service Discovery & Bootstrap
+
+concurrency:
+  group: service-discovery-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "applications/**"
+  pull_request:
+    paths:
+      - "applications/**"
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION || 'us-east-1' }}.amazonaws.com
+  AWS_ROLE: github-actions-eks-ecr-role
+  Artifacts_S3_Bucket: ${{ secrets.ARTIFACTS_S3_BUCKET || 'my-ci-artifacts55' }}
+  Artifacts_S3_Prefix: Ci-Artifacts
+  Artifacts_Folder: collected-artifacts
+
+jobs:
+  Check-For-New-Services:
+    runs-on: ubuntu-latest
+    outputs:
+      has_new_services: ${{ steps.check.outputs.has_new_services }}
+      new_services: ${{ steps.check.outputs.new_services }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for new services
+        id: check
+        run: |
+          chmod +x .github/platform/scripts/*.sh
+          .github/platform/scripts/check-for-new-services.sh
+
+  Setup-New-Services:
+    needs: Check-For-New-Services
+    if: needs.Check-For-New-Services.outputs.has_new_services == 'true'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.Check-For-New-Services.outputs.new_services) }}
+    runs-on: ubuntu-latest
+    env:
+      SERVICE: ${{ matrix.service }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup common tools
+        run: |
+          echo "🔧 Setting up common tools..."
+          chmod +x .github/scripts/shared/*.sh
+          chmod +x .github/scripts/applications/*.sh
+          chmod +x .github/platform/scripts/*.sh
+          ./.github/scripts/shared/setup-common-tools.sh ".github/scripts/applications/*.sh .github/platform/scripts/*.sh"
+          ./.github/scripts/applications/initialize-service-directory.sh "${{ env.SERVICE }}"
+      
+      - name: Setup new service
+        run: |
+          echo "🚀 Setting up new service: ${{ env.SERVICE }}"
+          .github/platform/scripts/setup-new-service.sh "${{ env.SERVICE }}"
+      
+      - name: Commit generated files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add helm/bankingapp-services/${{ env.SERVICE }} || true
+          git add helm/environments/*/Chart.yaml || true
+          git add .github/workflows/applications-${{ env.SERVICE }}.yaml || true
+          git commit -m "chore: auto-generate Helm chart and workflow for ${{ env.SERVICE }}" || exit 0
+          git push || echo "No changes to commit"
+

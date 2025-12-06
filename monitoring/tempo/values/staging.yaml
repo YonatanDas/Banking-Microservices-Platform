@@ -1,0 +1,33 @@
+tempo:
+  # Local storage for staging
+  storage:
+    trace:
+      backend: local
+  
+  # OTLP receiver
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+  
+  # Query frontend
+  queryFrontend:
+    enabled: true
+  
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Disable persistence
+  persistence:
+    enabled: false
+

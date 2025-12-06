@@ -1,0 +1,7 @@
+apiVersion: v2
+name: loki
+description: Minimal Loki SingleBinary deployment
+type: application
+version: 0.1.0
+
+

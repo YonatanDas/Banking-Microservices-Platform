@@ -1,0 +1,12 @@
+accounts:
+  image:
+    tag: "20"
+cards:
+  image:
+    tag: "21"
+loans:
+  image:
+    tag: "19"
+gateway:
+  image:
+    tag: "19"

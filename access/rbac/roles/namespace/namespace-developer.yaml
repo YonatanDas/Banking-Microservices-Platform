@@ -1,0 +1,35 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespace-developer
+  namespace: default  # Can be applied to any namespace
+  labels:
+    rbac.bankingapp.io/role: developer
+    rbac.bankingapp.io/scope: namespace
+    rbac.bankingapp.io/managed-by: gitops
+rules:
+  # Can view all resources in namespace
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  
+  # Can create/update/delete in namespace
+  - apiGroups: ["apps", ""]
+    resources: ["deployments", "services", "configmaps", "secrets"]
+    verbs: ["create", "update", "patch", "delete"]
+  
+  # Can manage pods
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/exec"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Can view events
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  
+  # Can manage horizontal pod autoscalers
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+

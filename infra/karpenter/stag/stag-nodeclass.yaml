@@ -1,0 +1,22 @@
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: stag-default
+spec:
+  amiFamily: AL2
+  instanceProfile: banking-karpenter-node-instance-profile
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: bankingapp-stag-eks
+  securityGroupSelectorTerms:
+    - tags:
+        kubernetes.io/cluster/bankingapp-stag-eks: shared
+  instanceStorePolicy: NVME
+  userData: |
+    #!/bin/bash
+    /etc/eks/bootstrap.sh bankingapp-stag-eks
+  tags:
+    Environment: stag
+    ManagedBy: karpenter
+    karpenter.sh/discovery: bankingapp-stag-eks
+

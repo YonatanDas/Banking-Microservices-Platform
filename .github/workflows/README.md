@@ -1,128 +1,103 @@
-# CI/CD with GitHub Actions
+# CI/CD Workflows
 
-## Purpose in this project
+GitHub Actions workflows implementing automated CI/CD pipelines for microservices and infrastructure.
 
-GitHub Actions workflows automate the entire software delivery lifecycle: **building, testing, scanning, signing, and deploying** microservices and infrastructure. All workflows use **OIDC-based authentication** (no long-lived credentials) and integrate with AWS ECR, EKS, and S3 for artifact storage.
+## Pipeline Overview
 
-## Folder structure overview
+### Service CI/CD Pipelines (`applications-*.yaml`)
 
-```
-.github/
-├── workflows/
-│   ├── Microservice-Ci.yaml        # Microservices CI/CD pipeline
-│   ├── terraform-validate.yaml     # Terraform validation & security scanning
-│   ├── terraform-plan.yaml         # Terraform plan generation
-│   └── terraform-apply.yaml        # Terraform apply with approval gates
-├── scripts/
-│   ├── 01-test-java.sh             # Maven lint, test, coverage
-│   ├── 02-trivy-fs-scan.sh         # Trivy filesystem vulnerability scan
-│   ├── 03-setup-buildx-cache.sh    # Docker Buildx cache setup
-│   ├── 04a-build-image.sh          # Multi-arch Docker image build
-│   ├── 04b-push-image.sh           # Push to ECR
-│   ├── 05-docker-cache-cleanup.sh   # Cache cleanup
-│   ├── 06-cosign-sign-verify.sh    # Cosign keyless signing & verification
-│   ├── 07-image-scan-sbom.sh       # Trivy image scan + SBOM generation
-│   ├── 08-artifact_collect_and_s3.sh  # Upload artifacts to S3
-│   ├── 09-checkov-security-scan.sh # Checkov IaC security scan
-│   ├── 12-tfsec-security-scan.sh   # tfsec IaC security scan
-│   ├── 13-terraform-plan.sh        # Terraform plan generation
-│   └── 14-update-helm-values.sh    # Helm values update helper
-└── actions/
-    ├── env-setup/
-    │   └── action.yaml              # AWS OIDC + ECR login composite action
-    ├── caching/
-    │   └── action.yaml              # Docker cache management
-    └── terraform-setup/
-        └── action.yaml              # Terraform installation & caching
-```
+![Services Workflow Diagram](../../docs/diagrams/Services-Workflow.png)
 
-**Key entry points**: `.github/workflows/*.yaml` (triggered on push/PR to `main`)
+Each microservice (accounts, cards, loans, gateway) has a dedicated workflow triggered on code changes:
 
-## How it works / design
+**Main Stages:**
+1. **Test**: Maven build, unit tests, code coverage (JaCoCo)
+2. **Security Scan (Filesystem)**: Trivy filesystem vulnerability scanning
+3. **Build**: Docker image build with Buildx caching
+4. **Security Scan (Image)**: Trivy container image scanning, SBOM generation
+5. **Sign & Push**: Cosign image signing, ECR push
+6. **Deploy**: Argo CD sync to dev environment (optional promotion to staging/production)
 
-### Microservices CI/CD pipeline (`Microservice-Ci.yaml`)
+**Security Scanning:**
+- **Trivy**: Filesystem and container image vulnerability scanning
+- **SBOM Generation**: Software Bill of Materials (SPDX format) for each image
+- **Artifact Archival**: All scan reports and SBOMs uploaded to S3
 
-**Trigger**: Push/PR to `main` branch when `01-accounts/`, `02-cards/`, `03-loans/`, or `04-gatewayserver/` directories change
+**Image Signing:**
+- **Cosign**: All container images signed before ECR push
+- **Verification**: Image signatures verified during deployment
 
-**Pipeline stages**:
-1. **Service detection**: `dorny/paths-filter` identifies changed services
-2. **Lint & test**: Maven lint, unit tests, code coverage (parallelized per service)
-3. **Trivy FS scan**: Filesystem vulnerability scanning before image build
-4. **Build & push**: Docker Buildx multi-arch builds, push to ECR with tag `github.run_number`
-5. **Image security**: Trivy image scan, SBOM generation (CycloneDX), Cosign keyless signing
-6. **Artifact archival**: Uploads test reports, scan results, SBOMs, build metadata to S3
+**Deployment Promotion:**
+- Manual workflow dispatch with options to promote to staging/production
+- Deployment validation and health checks before promotion
 
-**OIDC authentication**: Uses `github-actions-eks-ecr-role` (created by Terraform `iam/github_oidc` module) for ECR push and S3 upload
+### Terraform Workflows
 
-<img src="../../11-docs/diagrams/Services-Workflow.png" alt="Services Workflow" width="800" />
+![Terraform Validation Workflow](../../docs/diagrams/Terraform-Validate.png)
 
-### Terraform workflows
+**`infra-terraform-validate.yaml`**
+- **Format Check**: `terraform fmt -check` validation
+- **Terraform Validate**: Syntax and configuration validation per environment (dev/stag/prod)
+- **Security Scanning**: 
+  - Checkov: Terraform security policy scanning
+  - tfsec: Terraform security analysis
+- **Artifact Collection**: All reports uploaded to S3
 
-**Three-stage pipeline**:
-1. **`terraform-validate.yaml`**: Runs `terraform fmt`, `validate`, Checkov, and tfsec scans; archives results to S3
-2. **`terraform-plan.yaml`**: Generates Terraform plans (binary, text, JSON) for all environments; stores in S3 for review
-3. **`terraform-apply.yaml`**: Applies Terraform with manual approval gate; requires uploaded plan artifacts for staging/prod
+**`infra-terraform-plan.yaml`**
+- **Change Detection**: Detects Terraform changes per environment
+- **Terraform Plan**: Generates execution plan with PR comments
+- **Security Scanning**: Checkov and tfsec scans on plan output
+- **Artifact Archival**: Plans and scan reports stored in S3
 
-<img src="../../11-docs/diagrams/Terraform-Validate.png" alt="Terraform Vlidate Workflow" width="800" />
+**`infra-terraform-apply.yaml`**
+- **Manual Trigger**: Requires workflow dispatch with environment selection
+- **Terraform Apply**: Executes infrastructure changes
+- **State Management**: Uses S3 backend with DynamoDB locking
 
-<img src="../../11-docs/diagrams/Terraform-Plan-Apply.png" alt="Terraform Plan Apply Workflow" width="800" />
+**Environment Handling:**
+- Separate workflows/inputs per environment (dev/stag/prod)
+- Remote state stored in S3 with environment-specific keys
+- State locking via DynamoDB table
 
+![Terraform Plan and Apply Workflow](../../docs/diagrams/Terraform-Plan-Apply.png)
 
-**Security scanning**: Checkov and tfsec scan Terraform code for misconfigurations, insecure defaults, and compliance violations
+### Service Discovery (`service-discovery.yaml`)
 
-**Approval gates**: Production applies require manual approval and branch protection; dev can auto-approve
+**Auto-Detection & Generation:**
+- **Detection**: Scans `applications/` directory for new services (services without workflow files)
+- **Auto-Generation**: For each new service, generates:
+  - Helm chart skeleton in `helm/bankingapp-services/{service}/`
+  - Dedicated workflow file `.github/workflows/applications-{service}.yaml`
+  - Updates environment charts to include new service
+- **Auto-Commit**: Commits generated files back to repository
 
-### Composite actions
+**How It Works:**
+1. Workflow checks for services in `applications/` without corresponding workflow files
+2. For each new service, runs `setup-new-service.sh` script
+3. Script generates Helm chart from template and workflow from template
+4. Changes are committed and pushed automatically
 
-- **`env-setup`**: Configures AWS credentials via OIDC, logs into ECR
-- **`caching`**: Manages Docker Buildx cache for faster builds
-- **`terraform-setup`**: Installs Terraform version, caches for reuse
+## Authentication & Security
 
-## Key highlights
+**OIDC Authentication:**
+- GitHub Actions uses OIDC to assume AWS IAM roles
+- No long-lived AWS access keys stored in secrets
+- Roles: `github-actions-eks-ecr-role` (for ECR), `github-actions-terraform-role` (for Terraform)
 
-- **OIDC-based authentication**: No long-lived AWS credentials; short-lived tokens via GitHub OIDC provider
-- **Security scanning**: Trivy scans (filesystem + image), Checkov/tfsec IaC scanning, Cosign image signing, SBOM generation
-- **Artifact integrity**: All build artifacts (tests, scans, SBOMs, Terraform plans) archived to S3 for auditability
-- **Parallel execution**: Service builds run in parallel matrix strategy
-- **Multi-arch support**: Docker Buildx builds for `linux/amd64` and `linux/arm64`
-- **Approval gates**: Terraform applies require manual approval for staging/prod, preventing accidental infrastructure changes
-- **Change detection**: Path-based filtering only builds changed services, reducing CI/CD time and cost
+**Artifact Management:**
+- All build artifacts, scan reports, and SBOMs uploaded to S3
+- S3 bucket and prefix configurable via secrets
+- Artifacts organized by workflow name and commit SHA
 
-## How to use / extend
+## Workflow Files
 
-### Trigger microservices CI
-
-Push changes to `01-accounts/`, `02-cards/`, `03-loans/`, or `04-gatewayserver/` directories:
-```bash
-git commit -m "Update accounts service"
-git push origin main
-```
-
-### Run Terraform validation
-
-Workflow auto-triggers on Terraform file changes, or manually trigger via GitHub Actions UI.
-
-### Approve Terraform apply
-
-1. **Plan stage**: `terraform-plan` workflow generates and uploads plans
-2. **Review plans**: Download plans from S3 or view in workflow artifacts
-3. **Approve apply**: `terraform-apply` workflow requires manual approval; click "Review deployments" in GitHub Actions UI
-
-### Add a new service to CI
-
-1. Add service directory to `paths` filter in `Microservice-Ci.yaml`:
-```yaml
-paths:
-  - "new-service/**"
-```
-2. Add service to `dorny/paths-filter` filters
-3. Add service to matrix strategy
-
-### Modify security scanning
-
-Edit `.github/scripts/02-trivy-fs-scan.sh` or `09-checkov-security-scan.sh` to adjust scan severity levels or add custom policies.
-
-### View artifacts
-
-All artifacts uploaded to S3 bucket `my-ci-artifacts55` under prefix `Ci-Artifacts/`. Access via AWS Console or CLI.
+- `applications-accounts.yaml` - Accounts service CI/CD
+- `applications-cards.yaml` - Cards service CI/CD
+- `applications-loans.yaml` - Loans service CI/CD
+- `applications-gateway.yaml` - Gateway service CI/CD
+- `deploy-applications.yaml` - Multi-service deployment orchestration
+- `service-discovery.yaml` - New service auto-detection and generation
+- `infra-terraform-validate.yaml` - Terraform validation and security scanning
+- `infra-terraform-plan.yaml` - Terraform planning with PR comments
+- `infra-terraform-apply.yaml` - Terraform infrastructure deployment
 

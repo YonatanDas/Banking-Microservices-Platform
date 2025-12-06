@@ -1,0 +1,144 @@
+# Template values.yaml for Banking Microservices
+# 
+# This file serves as the standard template for creating new service Helm charts.
+# Copy this file to your new service directory and customize the service-specific values.
+#
+# All services use the bankingapp-common library chart for shared templates.
+# Only service-specific values should be defined here.
+
+# ============================================
+# SERVICE IDENTIFICATION
+# ============================================
+# REQUIRED: Update these values for your service
+deploymentName: {service}-deployment
+serviceName: {service}
+appLabel: {service}
+appName: {service}
+# OPTIONAL: Only include if ECR repository name differs from service name
+# ecrRepositoryName: {ecr-repo-name}
+
+# ============================================
+# REPLICATION
+# ============================================
+# Default replica count (can be overridden by environment)
+replicaCount: 2
+
+# ============================================
+# IMAGE CONFIGURATION
+# ============================================
+image:
+  repository: ""  # Computed from global.ecrRegistry and serviceName (or ecrRepositoryName if set)
+  tag: "latest"   # Overridden by environment image-tags.yaml
+  pullPolicy: IfNotPresent
+
+# ============================================
+# SERVICE ENDPOINTS
+# ============================================
+# REQUIRED: Update port numbers for your service
+servicePort: {port}  # Service port (e.g., 8080, 9000, 8090)
+containerPort: {port}  # Container port (usually same as servicePort)
+
+service:
+  type: ClusterIP
+  port: {port}
+  targetPort: {port}
+
+# ============================================
+# NETWORK POLICY
+# ============================================
+# REQUIRED: Configure service-to-service communication
+networkpolicy:
+  enabled: true
+  # Services allowed to communicate TO this service
+  allowFromServices:
+    - {service1}  # Update with actual service names
+    - {service2}
+  # Services this service is allowed to communicate WITH
+  allowToServices:
+    - {service1}  # Update with actual service names
+    - {service2}
+  # Port mappings for target services
+  targetPorts:
+    {service1}: {port1}  # Update with actual ports
+    {service2}: {port2}
+  denyAllIngress: true
+  denyAllEgress: true  # Gateway: set to false (needs external egress)
+
+# ============================================
+# SERVICE ACCOUNT (Optional)
+# ============================================
+# Only include if you need to override defaults or specify RDS access
+# serviceAccount:
+#   create: true
+#   name: {service}-sa
+#   needsRdsAccess: true  # Set to false if service doesn't need database access
+
+# ============================================
+# INGRESS (Gateway only)
+# ============================================
+# Only include for gateway service - all other services should omit this section
+# ingress:
+#   enabled: true  # Gateway: true, all others: omit or false
+#   className: alb
+#   host: "your-domain.com"
+
+# ============================================
+# AUTOSCALING
+# ============================================
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70      # Target CPU utilization percentage
+  memory: 70   # Target memory utilization percentage
+
+# ============================================
+# HEALTH PROBES
+# ============================================
+# Standard probe configuration for Spring Boot Actuator endpoints
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40       # Consistent across all services
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60  # Consistent across all services
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ============================================
+# RESOURCES
+# ============================================
+# Default resource requests and limits
+# Can be overridden by environment-specific values
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# ============================================
+# SECRETS (overridden by environment)
+# ============================================
+# Default secret name (environment-specific values will override)
+secretName: dev-db-credentials
+
+# ============================================
+# NOTES FOR NEW SERVICES
+# ============================================
+# 1. Replace all {placeholder} values with actual service-specific values
+# 2. Update network policy allowFromServices/allowToServices/targetPorts
+# 3. Set correct port numbers (servicePort, containerPort, service.port)
+# 4. If service doesn't need RDS access, set serviceAccount.needsRdsAccess: false
+# 5. Gateway service only: enable ingress and set denyAllEgress: false
+# 6. Ensure Chart.yaml includes dependency on bankingapp-common
+# 7. Create templates/include-common.yaml to include shared templates
+# 8. Add service to helm/environments/*-env/Chart.yaml dependencies
+# 9. Add service configuration to helm/environments/*-env/values.yaml
+

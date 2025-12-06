@@ -1,0 +1,72 @@
+# bankingapp-common/values.yaml
+global:
+  aws:
+    region: us-east-1
+  awsAccountId: ""  # Set in environment values.yaml
+  ecrRegistry: ""   # Computed in environment values.yaml: "{awsAccountId}.dkr.ecr.{region}.amazonaws.com"
+  configMapName: "platform-config"  # Default, can be overridden
+  environment: ""   # Set in environment values.yaml
+
+  # Default DB secret name (ESO will override per env)
+  dbSecretName: "db-credentials"
+
+serviceAccount:
+  create: true
+  name: ""               # overridden per service
+  annotations: {}        # overridden per service
+
+replicaCount: 1
+containerPort: 8080
+
+image:
+  repository: ""
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+networkpolicy:
+  denyAllIngress: true
+  denyAllEgress: true
+
+# Pod Disruption Budget configuration
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1  # Minimum number of pods that must be available during disruptions
+  # Alternative: maxUnavailable: 1  # Maximum number of pods that can be unavailable
+
+# Security context configuration
+securityContext:
+  runAsUser: 1000  # Default user ID, can be overridden per service
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  otel:
+    enabled: false  # Enable per environment in environment values.yaml
+    agentVersion: "1.32.0"  # OpenTelemetry Java Agent version
+  metricsPath: "/actuator/prometheus"
+  scrapeInterval: "30s"

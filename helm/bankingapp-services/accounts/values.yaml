@@ -1,0 +1,71 @@
+# bankingapp-services/accounts/values.yaml
+
+deploymentName: accounts-deployment
+serviceName: accounts
+appLabel: accounts
+appName: accounts
+
+# Service defaults — can be overridden in environments like dev, stag, prod
+replicaCount: 2
+
+image:
+  repository: ""  # Computed from global.ecrRegistry and serviceName in template
+  tag: "latest"               # overridden by env
+  pullPolicy: IfNotPresent
+
+servicePort: 8080
+containerPort: 8080
+
+networkpolicy:
+  enabled: true
+  allowFromServices:
+    - cards
+    - loans
+  allowToServices:
+    - cards
+    - loans
+  targetPorts:
+    cards: 9000
+    loans: 8090  
+  denyAllIngress: true
+  denyAllEgress: true
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpu: 70
+  memory: 70
+
+
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Secrets are created by ESO — service only references name
+secretName: dev-db-credentials
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1.5Gi

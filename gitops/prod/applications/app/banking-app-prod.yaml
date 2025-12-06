@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-app-prod  
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: |
+      accounts=063630846340.dkr.ecr.us-east-1.amazonaws.com/accounts,
+      cards=063630846340.dkr.ecr.us-east-1.amazonaws.com/cards,
+      loans=063630846340.dkr.ecr.us-east-1.amazonaws.com/loans,
+      gatewayserver=063630846340.dkr.ecr.us-east-1.amazonaws.com/gatewayserver
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/accounts.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/cards.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/loans.update-strategy: semver:^1.0.0
+    argocd-image-updater.argoproj.io/gatewayserver.update-strategy: semver:^1.0.0
+spec:
+  project: platform-prod-project
+  
+  source:
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
+    targetRevision: main
+    path: helm/environments/prod-env
+    helm:
+      valueFiles:
+        - values.yaml
+        - image-tags.yaml
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
+    syncWindows:
+
+      - kind: deny
+        schedule: '0 9 * * 1-5'  
+        duration: 8h
+        applications:
+          - '*'
+        manualSync: true  w
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+      - /spec/replicas
+      - /status
+  - group: ''
+    kind: Secret
+    jsonPointers:
+      - /data
+      - /metadata/annotations
+  - group: ''
+    kind: ConfigMap
+    jsonPointers:
+      - /metadata/annotations
+      - /data/SPRING_PROFILES_ACTIVE
+      - /data/JAVA_TOOL_OPTIONS
+      - /data/OTEL_EXPORTER_OTLP_ENDPOINT
+      - /data/OTEL_METRICS_EXPORTER
+      - /data/OTEL_LOGS_EXPORTER
+  - group: ''
+    kind: Service
+    jsonPointers:
+      - /metadata/annotations
+      - /status
+

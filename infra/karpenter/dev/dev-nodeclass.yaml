@@ -1,0 +1,22 @@
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: dev-default
+spec:
+  amiFamily: AL2
+  instanceProfile: banking-karpenter-node-instance-profile
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: bankingapp-dev-eks
+  securityGroupSelectorTerms:
+    - id: "sg-016292f01cdf0558f"
+    - tags:
+        kubernetes.io/cluster/bankingapp-dev-eks: shared
+  userData: |
+    #!/bin/bash
+    /etc/eks/bootstrap.sh bankingapp-dev-eks
+  tags:
+    Environment: dev
+    ManagedBy: karpenter
+    karpenter.sh/discovery: bankingapp-dev-eks
+

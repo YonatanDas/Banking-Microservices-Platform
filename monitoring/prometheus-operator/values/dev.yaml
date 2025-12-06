@@ -1,0 +1,193 @@
+kube-prometheus-stack:
+  # Disable admission webhooks
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  
+  prometheusOperator:
+    admissionWebhooks:
+      enabled: false
+      patch:
+        enabled: false
+      failurePolicy: Ignore
+    # Disable TLS to prevent volume mount for missing secret
+    tls:
+      enabled: false
+  
+  prometheus:
+    prometheusSpec:
+      retention: 15d
+      # ServiceMonitor namespace selector (empty = all namespaces)
+      serviceMonitorNamespaceSelector: {}
+      serviceMonitorSelector: {}
+      # Alertmanager configuration
+      alerting:
+        alertmanagers:
+          - namespace: monitoring
+            name: prometheus-operator-dev-ku-alertmanager
+            port: web
+      # Resource limits for Prometheus (adjusted for small nodes)
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1.5Gi"
+        limits:
+          cpu: "1500m"
+          memory: "3Gi"
+      #storageSpec:
+        #volumeClaimTemplate:
+        #  spec:
+           # storageClassName: gp3
+           # accessModes: ["ReadWriteOnce"]
+           # resources:
+           #   requests:
+             #   storage: 50Gi
+             
+  prometheus-node-exporter:
+    enabled: true
+    hostNetwork: false
+    hostPID: false
+    resources:
+      requests:
+        cpu: 100m        # Reduced from default (usually 100m)
+        memory: 128Mi     # Reduced from default (usually 180Mi)
+      limits:
+        cpu: 200m        # Reduced from default (usually 200m)
+        memory: 256Mi    # Reduced from default (usually 180Mi)
+    tolerations:
+      - operator: Exists
+    extraArgs:
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)  
+
+  kubeStateMetrics:
+    enabled: true
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+
+  alertmanager:
+    alertmanagerSpec:
+      retention: 120h
+      # Resource limits for Alertmanager (adjusted for small nodes)
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "512Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
+      # Alertmanager configuration
+      config:
+        global:
+          resolve_timeout: 5m
+          # Configure SMTP for email notifications (update with your SMTP server)
+          # smtp_smarthost: 'smtp.gmail.com:587'
+          # smtp_from: 'alerts@yourcompany.com'
+          # smtp_auth_username: 'your-email@gmail.com'
+          # smtp_auth_password: 'your-password'
+        # Route configuration
+        route:
+          group_by: ['alertname', 'cluster', 'service']
+          group_wait: 10s
+          group_interval: 10s
+          repeat_interval: 12h
+          receiver: 'default'
+          routes:
+            - match:
+                severity: critical
+              receiver: 'critical-alerts'
+              continue: true
+            - match:
+                severity: warning
+              receiver: 'warning-alerts'
+        # Receivers
+        receivers:
+          - name: 'default'
+            # Email receiver example (uncomment and configure)
+            # email_configs:
+            #   - to: 'team@yourcompany.com'
+            #     send_resolved: true
+            #     headers:
+            #       Subject: '{{ .GroupLabels.alertname }} - {{ .Status }}'
+            # Slack receiver example (uncomment and configure)
+            # slack_configs:
+            #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            #     channel: '#alerts'
+            #     send_resolved: true
+            #     title: '{{ .GroupLabels.alertname }}'
+            #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+          - name: 'critical-alerts'
+            # Email receiver for critical alerts
+            # NOTE: SMTP settings must be configured in the global section above before uncommenting email_configs
+            # email_configs:
+            #   - to: 'oncall@yourcompany.com'  # UPDATE: Replace with your on-call email
+            #     send_resolved: true
+            #     headers:
+            #       Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+            # Slack receiver for critical alerts
+            # slack_configs:
+            #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            #     channel: '#critical-alerts'
+            #     send_resolved: true
+            #     title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+            #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+          - name: 'warning-alerts'
+            # Email receiver for warning alerts
+            # email_configs:
+            #   - to: 'team@yourcompany.com'
+            #     send_resolved: true
+            #     headers:
+            #       Subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+            # Slack receiver for warning alerts
+            # slack_configs:
+            #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            #     channel: '#alerts'
+            #     send_resolved: true
+            #     title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+            #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  grafana:
+    adminPassword: external-secrets
+    service:
+      type: ClusterIP
+    persistence:
+      enabled: false
+      #size: 10Gi
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            url: http://prometheus-operator-dev-ku-prometheus:9090
+          - name: Loki
+            type: loki
+            url: http://loki-gateway:80
+          - name: Tempo
+            type: tempo
+            url: http://tempo-dev:3100
+            access: proxy
+            jsonData:
+              httpMethod: GET
+              tracesToLogs:
+                datasourceUid: loki
+                tags: ['job', 'instance', 'pod', 'namespace']
+                mappedTags: [{ key: 'service.name', value: 'service' }]
+                mapTagNamesEnabled: false
+                spanStartTimeShift: '1h'
+                spanEndTimeShift: '1h'
+                filterByTraceID: false
+                filterBySpanID: false
+

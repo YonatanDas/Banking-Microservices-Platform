@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-resources-prod
+  namespace: argocd
+spec:
+  project: platform-prod-project
+  
+  source:
+    repoURL: https://github.com/YonatanDas/Banking-Microservices-Platform.git
+    targetRevision: main
+    path: monitoring/resources
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  
+  ignoreDifferences:
+    - group: v1
+      kind: ResourceQuota
+      jsonPointers:
+        - /metadata/annotations
+    - group: v1
+      kind: LimitRange
+      jsonPointers:
+        - /metadata/annotations
+

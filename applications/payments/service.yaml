@@ -1,0 +1,74 @@
+metadata:
+  name: payments
+  description: Payments microservice (!example new - microservices)
+
+container:
+  port: 8085
+  imageRepository: payments
+
+replicas:
+  default: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPU: 70
+  targetMemory: 70
+
+service:
+  type: ClusterIP
+  port: 8085
+
+ingress:
+  enabled: false
+  host: ""
+  path: /
+  className: ""
+  annotations: {}
+
+networkPolicy:
+  enabled: true
+  allowFromServices:
+    - gateway
+  allowToServices: []
+  targetPorts: {}
+  denyAllIngress: true
+  denyAllEgress: true
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+environment:
+  variables: []
+  secrets: []
+
+serviceAccount:
+  create: true
+  name: payments-sa
+  annotations: {}
+
+monitoring:
+  otelEnabled: true
+  serviceMonitorEnabled: true
+
+
