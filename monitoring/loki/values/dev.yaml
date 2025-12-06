@@ -1,5 +1,6 @@
 loki:
   auth_enabled: false
+  generatedConfigObjectName: ""
   
   schemaConfig:
     configs:
