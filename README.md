@@ -1,6 +1,6 @@
 # Multi-Environment Banking Platform on AWS EKS
 
-Production-ready cloud-native platform deploying banking microservices (accounts, cards, loans, gateway) across dev, staging, and production environments on AWS EKS with GitOps automation, security controls, and full observability.
+Enterprise Level cloud-native platform deploying banking microservices (accounts, cards, loans, gateway) across dev, staging, and production environments on AWS EKS with GitOps automation, security controls, and full observability.
 
 ## Badges
 ![Terraform](https://img.shields.io/badge/Terraform-1.6+-623CE4?style=flat-square&logo=terraform&logoColor=white)
@@ -15,8 +15,8 @@ Production-ready cloud-native platform deploying banking microservices (accounts
 ## High-Level Architecture
 
 **Architecture Transformation**:
-
 *Before: Docker Compose on single host*
+
 <img src="docs/diagrams/before-diagram.png" alt="Legacy Architecture" width="500">
 
 *After: Multi-environment EKS platform with GitOps*
